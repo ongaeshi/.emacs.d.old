@@ -1,0 +1,7 @@
+.recentf
+*.elc
+anything-c-adaptive-history
+.DS_Store
+*~
+auto-save-list/
+url/
