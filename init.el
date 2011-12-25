@@ -329,6 +329,9 @@
 ; 下を押しても改行をいれないための方法
 (setq next-line-add-newlines nil)
 
+; バックアップファイルを作らない (init.el~ みたいなやつ)
+(setq make-backup-files nil)
+
 ; 画面や、フレームの幅に満たないウィンドウでも、テキストを折り返して表示する
 (setq truncate-partial-width-windows nil)
 ;(setq truncate-partial-width-windows t)
