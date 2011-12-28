@@ -1348,6 +1348,27 @@
 (global-set-key (kbd "C-t") 'switch-to-last-buffer-or-other-window)
 ;(global-set-key (kbd "M-l") 'switch-to-last-buffer)
 
+;;--------------------------------------------------------------------------
+;; for Cocoa Emacs
+;;--------------------------------------------------------------------------
+
+;; 日本語設定
+(set-language-environment 'Japanese)
+(prefer-coding-system 'utf-8)
+
+;; MetaキーをCommandボタンに変更
+;; CarbonからCocoaへ--Snow LeopardでEmacs 23を使う（3） - builder
+;; http://builder.japan.zdnet.com/os-admin/sp_snow-leopard-09/20410578/
+(setq ns-command-modifier (quote meta))
+(setq ns-alternate-modifier (quote super))
+
+;; Cocoa Emacs(Emacs23)での日本語フォント設定
+;; http://macemacsjp.sourceforge.jp/index.php?MacFontSetting#h3b01bb4
+(create-fontset-from-ascii-font "Menlo-14:weight=normal:slant=normal" nil "menlokakugo")
+(set-fontset-font "fontset-menlokakugo" 'unicode (font-spec :family "Hiragino Kaku Gothic ProN" ) nil 'append)
+(add-to-list 'default-frame-alist '(font . "fontset-menlokakugo"))
+(setq face-font-rescale-alist '((".*Hiragino.*" . 1.2) (".*Menlo.*" . 1.0)))
+
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ;;--------------------------------------------------------------------------
