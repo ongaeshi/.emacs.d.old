@@ -377,6 +377,33 @@
 (ffap-bindings)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Emacsに必要なパスを通す
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; http://sakito.jp/emacs/emacsshell.html#path
+;; より下に記述した物が PATH の先頭に追加されます
+(dolist (dir (list
+              "/usr/X11/bin"
+              "/usr/local/bin"
+              "/sbin"
+              "/usr/sbin"
+              "/bin"
+              "/usr/bin"
+              "/usr/local/mysql/bin"
+              "/Developer/Tools"
+              "/usr/local/sbin"
+              "/opt/local/sbin"
+              "/opt/local/bin" ;; これが/usr/binよりも下に書いてあればよい
+              "/usr/local/bin"
+              (expand-file-name "~/bin")
+              (expand-file-name "~/bin/gnuplot")
+              ))
+  ;; PATH と exec-path に同じ物を追加します
+  (when ;; (and 
+         (file-exists-p dir) ;; (not (member dir exec-path)))
+    (setenv "PATH" (concat dir ":" (getenv "PATH")))
+    (setq exec-path (append (list dir) exec-path))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;shell-mode
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; .bashrcでcdやpushd,popdにエイリアスを貼る場合は、Emacs側にも伝えておく必要がある
@@ -726,13 +753,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;anythingのキーバインドを設定
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key (kbd "C-,") 'anything-at-point)
+;(global-set-key (kbd "C-,") 'anything-at-point)
+(global-set-key (kbd "C-,") 'anything-filelist+)
 (global-set-key (kbd "C-c C-,") 'anything-resume)
 
 (define-key anything-map "\C-\M-n" 'anything-next-source)
 (define-key anything-map "\C-\M-p" 'anything-previous-source)
 (define-key anything-map "\C-z"    'anything-execute-persistent-action)
-(define-key anything-map "C-i"     'anything-select-action)
+;(define-key anything-map "C-i"     'anything-select-action)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;実験的なanything-c-source
