@@ -1373,7 +1373,7 @@
       (switch-to-last-buffer)
     (other-window 1)))
 
-(global-set-key (kbd "C-t") 'switch-to-last-buffer-or-other-window)
+;(global-set-key (kbd "C-t") 'switch-to-last-buffer-or-other-window)
 ;(global-set-key (kbd "M-l") 'switch-to-last-buffer)
 
 ;;--------------------------------------------------------------------------
@@ -1396,6 +1396,24 @@
 (set-fontset-font "fontset-menlokakugo" 'unicode (font-spec :family "Hiragino Kaku Gothic ProN" ) nil 'append)
 (add-to-list 'default-frame-alist '(font . "fontset-menlokakugo"))
 (setq face-font-rescale-alist '((".*Hiragino.*" . 1.2) (".*Menlo.*" . 1.0)))
+
+;;--------------------------------------------------------------------------
+;; smartrep
+;;--------------------------------------------------------------------------
+(require 'smartrep)
+
+; プレフィックスキーの設定
+(defvar ctl-t-map (make-keymap))
+(define-key global-map "\C-t" ctl-t-map)
+
+; キーバインドの設定
+(smartrep-define-key
+ global-map "C-t" '(("j" . (lambda () (scroll-other-window 1)))
+                    ("k" . (lambda () (scroll-other-window -1)))
+                    ("J" . 'scroll-other-window)
+                    ("K" . (lambda () (scroll-other-window '-))) 
+                    ("a" . (lambda () (beginning-of-buffer-other-window 0))) 
+                    ("e" . (lambda () (end-of-buffer-other-window 0)))))
 
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
