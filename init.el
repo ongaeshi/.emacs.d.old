@@ -1402,18 +1402,37 @@
 ;;--------------------------------------------------------------------------
 (require 'smartrep)
 
+;;--------------------------------------------------------------------------
+;; smartrep viewer
+;;--------------------------------------------------------------------------
+
 ; プレフィックスキーの設定
 (defvar ctl-t-map (make-keymap))
 (define-key global-map "\C-t" ctl-t-map)
 
 ; キーバインドの設定
 (smartrep-define-key
- global-map "C-t" '(("j" . (lambda () (scroll-other-window 1)))
-                    ("k" . (lambda () (scroll-other-window -1)))
-                    ("J" . 'scroll-other-window)
-                    ("K" . (lambda () (scroll-other-window '-))) 
-                    ("a" . (lambda () (beginning-of-buffer-other-window 0))) 
-                    ("e" . (lambda () (end-of-buffer-other-window 0)))))
+ global-map "C-t"
+ '(
+   ; main-window
+   ("SPC" . 'scroll-up)
+   ("b" . 'scroll-down)
+   ("l" . 'forward-char)
+   ("h" . 'backward-char)
+   ("j" . (lambda () (scroll-up 1)))
+   ("k" . (lambda () (scroll-up -1)))
+   ("a" . (lambda () (beginning-of-buffer)))
+   ("e" . (lambda () (end-of-buffer)))
+   ("i" . 'keyboard-quit)
+   ; other-window
+   ("n" . 'scroll-other-window)
+   ("N" . (lambda () (scroll-other-window '-)))
+   ("m" . (lambda () (scroll-other-window 1)))
+   ("," . (lambda () (scroll-other-window -1)))
+   ("A" . (lambda () (beginning-of-buffer-other-window 0)))
+   ("E" . (lambda () (end-of-buffer-other-window 0)))
+   )
+ )
 
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
