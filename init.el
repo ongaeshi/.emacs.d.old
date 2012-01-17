@@ -1146,7 +1146,7 @@
 ;; transient-mark-mode
 ;;   C-sからそのままテキストコピーをよく使うので、やっぱりnilがいいや
 ;;--------------------------------------------------------------------------
-(setq transient-mark-mode nil)
+(setq transient-mark-mode t)
 
 ;;--------------------------------------------------------------------------
 ;; color-moccur
@@ -1225,6 +1225,7 @@
 (setq anything-samewindow nil)
 (push '("*anything*" :height 20) popwin:special-display-config)
 (push '("*anything for files*" :height 20) popwin:special-display-config)
+(push '("*anything file list*" :height 20) popwin:special-display-config)
 
 (push '("*scratch*") popwin:special-display-config)
 (push '("svnlog.txt") popwin:special-display-config)
@@ -1440,6 +1441,12 @@
 (require 'jaunte)
 ;(global-set-key (kbd "C-c C-j") 'jaunte)
 (global-set-key (kbd "M-l") 'jaunte)
+
+;;--------------------------------------------------------------------------
+;; zencoding
+;;--------------------------------------------------------------------------
+;; (require 'zencoding-mode)
+;; (add-hook 'html-mode-hook 'zencoding-mode)
 
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
