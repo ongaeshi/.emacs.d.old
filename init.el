@@ -333,8 +333,8 @@
 (setq make-backup-files nil)
 
 ; 画面や、フレームの幅に満たないウィンドウでも、テキストを折り返して表示する
-(setq truncate-partial-width-windows nil)
-;(setq truncate-partial-width-windows t)
+;(setq truncate-partial-width-windows nil)
+(setq truncate-partial-width-windows t)
 
 ;;; ツールバーを表示しない
 (tool-bar-mode 0)
@@ -1447,6 +1447,56 @@
 ;;--------------------------------------------------------------------------
 ;; (require 'zencoding-mode)
 ;; (add-hook 'html-mode-hook 'zencoding-mode)
+
+;;--------------------------------------------------------------------------
+;; Cocoa Emacsでバックスラッシュが上手く入力出来ない対策
+;;
+;;   MacなEmacsでバックスラッシュを簡単に入力したい - Watsonのメモ
+;;   http://d.hatena.ne.jp/Watson/20100207/1265476938
+;;    
+;;   Carbon Emacs で「\(バックスラッシュ)」を入力する - あいぷらぷら；
+;;   http://d.hatena.ne.jp/june29/20080204/1202119521
+;;--------------------------------------------------------------------------
+(define-key global-map [?\\] [?\\])
+(define-key global-map [?\C-\] [?\C-\\])
+(define-key global-map [?\M-\] [?\M-\\])
+(define-key global-map [?\C-\M-\] [?\C-\M-\\])
+
+;;--------------------------------------------------------------------------
+;; dired-details
+;;--------------------------------------------------------------------------
+(require 'dired-details)
+(dired-details-install)
+(setq dired-details-hidden-string "")
+
+;;--------------------------------------------------------------------------
+;; joseph-single-dired
+;;--------------------------------------------------------------------------
+(require 'joseph-single-dired)
+(eval-after-load 'dired '(require 'joseph-single-dired))
+
+;;--------------------------------------------------------------------------
+;; Titanium
+;;--------------------------------------------------------------------------
+(defun ti-send-run ()
+  (setq proc (open-network-stream "titanium" nil "127.0.0.1" 9090))
+  (process-send-string proc "GET /run HTTP/1.0\r\n\r\n")
+  (sleep-for 1)
+  (delete-process proc))
+
+(defun reload-titanium ()
+  (if (string-match "Resources" (buffer-file-name))
+        (ti-send-run)))
+
+(add-hook 'after-save-hook 'reload-titanium)
+
+;;--------------------------------------------------------------------------
+;; auto-shell-command
+;;--------------------------------------------------------------------------
+(require 'auto-shell-command)
+
+(setq auto-shell-command-setting
+      '(("Documents/milkode/test/" "cd ~/Documents/milkode/test/ && rake test")))
 
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

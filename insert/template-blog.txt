@@ -25,3 +25,7 @@ rescue RSS::InvalidRSSError
 end
 ||<
 
+>|csh|
+# aaa
+$ ls test
+||<
