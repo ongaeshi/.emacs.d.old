@@ -1478,17 +1478,17 @@
 ;;--------------------------------------------------------------------------
 ;; Titanium
 ;;--------------------------------------------------------------------------
-(defun ti-send-run ()
-  (setq proc (open-network-stream "titanium" nil "127.0.0.1" 9090))
-  (process-send-string proc "GET /run HTTP/1.0\r\n\r\n")
-  (sleep-for 1)
-  (delete-process proc))
+;; (defun ti-send-run ()
+;;   (setq proc (open-network-stream "titanium" nil "127.0.0.1" 9090))
+;;   (process-send-string proc "GET /run HTTP/1.0\r\n\r\n")
+;;   (sleep-for 1)
+;;   (delete-process proc))
 
-(defun reload-titanium ()
-  (if (string-match "Resources" (buffer-file-name))
-        (ti-send-run)))
+;; (defun reload-titanium ()
+;;   (if (string-match "Resources" (buffer-file-name))
+;;         (ti-send-run)))
 
-(add-hook 'after-save-hook 'reload-titanium)
+;; (add-hook 'after-save-hook 'reload-titanium)
 
 ;;--------------------------------------------------------------------------
 ;; auto-shell-command
@@ -1496,7 +1496,25 @@
 (require 'auto-shell-command)
 
 (setq auto-shell-command-setting
-      '(("Documents/milkode/test/" "cd ~/Documents/milkode/test/ && rake test")))
+      '(("Documents/milkode/test/" "(cd ~/Documents/milkode/test/ && rake test)")
+        ("Resources/"              "wget -O /dev/null http://0.0.0.0:9090/run")))
+
+;;--------------------------------------------------------------------------
+;; 一行複製
+;;--------------------------------------------------------------------------
+(defun duplicate-line ()
+  (interactive)
+  (save-excursion
+    (let (start)
+      (beginning-of-line)
+      (setq start (point))
+      (next-line)
+      (kill-ring-save start (point))
+      (yank)
+      )))
+
+;(global-set-key (kbd "C-M-d") 'duplicate-line) ; OSXでは辞書.appに乗っ取られていて使えない(C-M-S-dなら反応する)
+(global-set-key (kbd "C-M-c") 'duplicate-line) ; 仕方ないのでC-M-cに
 
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
