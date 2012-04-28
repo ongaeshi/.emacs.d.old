@@ -1407,33 +1407,33 @@
 ;; smartrep viewer
 ;;--------------------------------------------------------------------------
 
-; プレフィックスキーの設定
-(defvar ctl-t-map (make-keymap))
-(define-key global-map "\C-t" ctl-t-map)
+;; ; プレフィックスキーの設定
+;; (defvar ctl-t-map (make-keymap))
+;; (define-key global-map "\C-t" ctl-t-map)
 
-; キーバインドの設定
-(smartrep-define-key
- global-map "C-t"
- '(
-   ; main-window
-   ("SPC" . 'scroll-up)
-   ("b" . 'scroll-down)
-   ("l" . 'forward-char)
-   ("h" . 'backward-char)
-   ("j" . (lambda () (scroll-up 1)))
-   ("k" . (lambda () (scroll-up -1)))
-   ("a" . (lambda () (beginning-of-buffer)))
-   ("e" . (lambda () (end-of-buffer)))
-   ("i" . 'keyboard-quit)
-   ; other-window
-   ("n" . 'scroll-other-window)
-   ("N" . (lambda () (scroll-other-window '-)))
-   ("m" . (lambda () (scroll-other-window 1)))
-   ("," . (lambda () (scroll-other-window -1)))
-   ("A" . (lambda () (beginning-of-buffer-other-window 0)))
-   ("E" . (lambda () (end-of-buffer-other-window 0)))
-   )
- )
+;; ; キーバインドの設定
+;; (smartrep-define-key
+;;  global-map "C-t"
+;;  '(
+;;    ; main-window
+;;    ("SPC" . 'scroll-up)
+;;    ("b" . 'scroll-down)
+;;    ("l" . 'forward-char)
+;;    ("h" . 'backward-char)
+;;    ("j" . (lambda () (scroll-up 1)))
+;;    ("k" . (lambda () (scroll-up -1)))
+;;    ("a" . (lambda () (beginning-of-buffer)))
+;;    ("e" . (lambda () (end-of-buffer)))
+;;    ("i" . 'keyboard-quit)
+;;    ; other-window
+;;    ("n" . 'scroll-other-window)
+;;    ("N" . (lambda () (scroll-other-window '-)))
+;;    ("m" . (lambda () (scroll-other-window 1)))
+;;    ("," . (lambda () (scroll-other-window -1)))
+;;    ("A" . (lambda () (beginning-of-buffer-other-window 0)))
+;;    ("E" . (lambda () (end-of-buffer-other-window 0)))
+;;    )
+;;  )
 
 ;;--------------------------------------------------------------------------
 ;; jaunte.el - EmacsでHit a Hint(改)
@@ -1495,26 +1495,30 @@
 ;;--------------------------------------------------------------------------
 (require 'auto-shell-command)
 
+(defun auto-shell-command:notify (msg)
+  (deferred:process-shell (format "growlnotify -m %s -t emacs" msg))  ; Growl(OSX)
+  )
+
 (setq auto-shell-command-setting
-      '(("Documents/milkode/test/" "(cd ~/Documents/milkode/test/ && rake test)")
+      '(("Documents/milkode/test/test_findgrep.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_findgrep.rb)")
+        ("Documents/milkode/test/test_cdstk.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cdstk.rb)")
+        ("Documents/milkode/test/test_package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)")
+        ("Documents/milkode/test/test_util.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_util.rb)")
+        ("Documents/milkode/test/test_milkode_yaml.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_milkode_yaml.rb)")
+        ("Documents/milkode/test/test_yaml_file_wrapper.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_yaml_file_wrapper.rb)")
+        ("Documents/milkode/test/test_ignore_setting.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_ignore_setting.rb)")
+        ("Documents/milkode/test/test_ignore_checker.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_ignore_checker.rb)")
+        ("Documents/milkode/test/test_package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)")
+        ("Documents/milkode/lib/milkode/cdstk/package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)")
+        ("Documents/milkode/test/test_cdstk.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cdstk.rb)")
+        ("Documents/milkode/test/" "(cd ~/Documents/milkode/test/ && rake test)")
         ("Resources/"              "wget -O /dev/null http://0.0.0.0:9090/run")))
 
 ;;--------------------------------------------------------------------------
-;; 一行複製
+;;カーソル行を複製する、範囲選択時は範囲を複製
 ;;--------------------------------------------------------------------------
-(defun duplicate-line ()
-  (interactive)
-  (save-excursion
-    (let (start)
-      (beginning-of-line)
-      (setq start (point))
-      (next-line)
-      (kill-ring-save start (point))
-      (yank)
-      )))
-
-;(global-set-key (kbd "C-M-d") 'duplicate-line) ; OSXでは辞書.appに乗っ取られていて使えない(C-M-S-dなら反応する)
-(global-set-key (kbd "C-M-c") 'duplicate-line) ; 仕方ないのでC-M-cに
+(require 'duplicate-thing)
+(global-set-key (kbd "M-c") 'duplicate-thing) ; 元のキーはcapitalize-word
 
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
