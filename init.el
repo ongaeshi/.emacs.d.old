@@ -1502,28 +1502,26 @@
 ;;--------------------------------------------------------------------------
 (require 'auto-shell-command)
 
-(defun auto-shell-command:notify (msg)
-  (deferred:process-shell (format "growlnotify -m %s -t emacs" msg))  ; Growl(OSX)
-  )
+;; コマンドリスト(下が優先高)
+(ascmd:add '("Documents/milkode/test/" "(cd ~/Documents/milkode/test/ && rake test)"))
+(ascmd:add '("Documents/milkode/test/test_cdstk.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cdstk.rb)"))
+(ascmd:add '("Documents/milkode/test/test_findgrep.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_findgrep.rb)"))
+(ascmd:add '("Documents/milkode/test/test_cli.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cli.rb)"))
+(ascmd:add '("Documents/milkode/test/test_cdstk.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cdstk.rb)"))
+(ascmd:add '("Documents/milkode/test/test_package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)"))
+(ascmd:add '("Documents/milkode/test/test_util.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_util.rb)"))
+(ascmd:add '("Documents/milkode/test/test_milkode_yaml.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_milkode_yaml.rb)"))
+(ascmd:add '("Documents/milkode/test/test_yaml_file_wrapper.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_yaml_file_wrapper.rb)"))
+(ascmd:add '("Documents/milkode/test/test_ignore_setting.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_ignore_setting.rb)"))
+(ascmd:add '("Documents/milkode/test/test_ignore_checker.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_ignore_checker.rb)"))
+(ascmd:add '("Documents/milkode/test/test_package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)"))
+(ascmd:add '("Documents/milkode/lib/milkode/cdstk/package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)"))
+(ascmd:add '("Resources/"              "wget -O /dev/null http://0.0.0.0:9090/run"))
 
-(push )
+;; Notify Growl (OSX)
+(defun auto-shell-command:notify (msg) (deferred:process-shell (format "growlnotify -m %s -t emacs" msg)))
 
-(setq auto-shell-command-setting
-      '(("Documents/milkode/test/test_findgrep.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_findgrep.rb)")
-        ("Documents/milkode/test/test_cli.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cli.rb)")
-        ("Documents/milkode/test/test_cdstk.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cdstk.rb)")
-        ("Documents/milkode/test/test_package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)")
-        ("Documents/milkode/test/test_util.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_util.rb)")
-        ("Documents/milkode/test/test_milkode_yaml.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_milkode_yaml.rb)")
-        ("Documents/milkode/test/test_yaml_file_wrapper.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_yaml_file_wrapper.rb)")
-        ("Documents/milkode/test/test_ignore_setting.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_ignore_setting.rb)")
-        ("Documents/milkode/test/test_ignore_checker.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_ignore_checker.rb)")
-        ("Documents/milkode/test/test_package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)")
-        ("Documents/milkode/lib/milkode/cdstk/package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)")
-        ("Documents/milkode/test/test_cdstk.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cdstk.rb)")
-        ("Documents/milkode/test/" "(cd ~/Documents/milkode/test/ && rake test)")
-        ("Resources/"              "wget -O /dev/null http://0.0.0.0:9090/run")))
-
+;; Popwin Setting
 (push '("*Auto Shell Command*" :height 20) popwin:special-display-config)
 
 ;;--------------------------------------------------------------------------

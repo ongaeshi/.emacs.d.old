@@ -30,13 +30,14 @@
 ;;; Parameter:
 
 (defun auto-shell-command:notify (msg)
-  (message msg)                                                    ; simple
-  ;;(deferred:process-shell (format "growlnotify -m %s -t emacs" msg))  ; Growl(OSX)
-  ;; (deferred:process-shell (format "growlnotify %s /t:emacs" msg))  ; Growl(Win)
+  (message msg)                                                        ; simple
+  ;;(deferred:process-shell (format "growlnotify -m %s -t emacs" msg)) ; Growl(OSX)
+  ;; (deferred:process-shell (format "growlnotify %s /t:emacs" msg))   ; Growl(Win)
   )
 
-; 自動でコンパイルするか？
 (defvar auto-shell-command:active t)
+
+(defvar auto-shell-command:buffer-name "*Auto Shell Command*")
 
 ;;; Main:
 
@@ -50,11 +51,11 @@
         (lambda () (if notify-start (auto-shell-command:notify "start"))))
       ;; main
       (deferred:process-shell arg)
-      (deferred:error it (lambda (err) (setq result "failed") err))
+      (deferred:error it (lambda (err) (setq result "failed") (pop-to-buffer auto-shell-command:buffer-name) err))
       ;; after
       (deferred:nextc it
         (lambda (x)
-          (with-current-buffer (get-buffer-create "*Auto Shell Command*")
+          (with-current-buffer (get-buffer-create auto-shell-command:buffer-name)
             (delete-region (point-min) (point-max))
             (insert x))
           (auto-shell-command:notify result))))))
@@ -70,16 +71,18 @@
 ;; @latertodo C-cC-mに割り当て(後で外すかも)
 (global-set-key "\C-c\C-m" 'auto-shell-command:toggle)
 
-; 実行するコマンドリスト
-;
-; ex.
-;   (setq auto-shell-command-setting
-;         (("/path/to/dir/BBB/test" 'match-dir  "make test"                                ("cpp hpp"))
-;          ("/path/to/dir/doc"      'match-dir  "make all doc"                             ("html"))
-;          ("/path/to/dir/AAA"      'match-dir  "make all && (cd /path/to/dir/BBB/; make)")
-;          ("/path/to/dir/BBB"      'match-dir  "(cd /path/to/dir/AAA/; make) && make")
-;          ("/path/to/dir"          'buffer-dir "make")))
-(defvar auto-shell-command-setting nil)
+;; Command list
+(setq auto-shell-command:setting nil)
+
+;; Add command
+;; ex.
+;;   (setq auto-shell-command:setting
+;;         (("/path/to/dir/BBB/test" 'match-dir  "make test"                                ("cpp hpp"))
+;;          ("/path/to/dir/doc"      'match-dir  "make all doc"                             ("html"))
+;;          ("/path/to/dir/AAA"      'match-dir  "make all && (cd /path/to/dir/BBB/; make)")
+;;          ("/path/to/dir/BBB"      'match-dir  "(cd /path/to/dir/AAA/; make) && make")
+;;          ("/path/to/dir"          'buffer-dir "make")))
+(defun ascmd:add (v) (push v auto-shell-command:setting))
 
 ; 一つのコマンドを実行
 (defun auto-shell-command:exec1 (path command)
@@ -94,7 +97,7 @@
 (defun auto-shell-command:exec ()
   (interactive)
   (if auto-shell-command:active
-      (find-if '(lambda (v) (apply 'auto-shell-command:exec1 v)) auto-shell-command-setting)))
+      (find-if '(lambda (v) (apply 'auto-shell-command:exec1 v)) auto-shell-command:setting)))
 
 ; ファイルセーブ時にコンパイル
 (add-hook 'after-save-hook 'auto-shell-command:exec)
