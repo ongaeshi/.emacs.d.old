@@ -9,7 +9,7 @@
 (add-to-list 'load-path "~/.emacs.d/auto-install")
 
 ;;環境による切り分け
-(require 'environment-p)
+(require 'platform-p)
 
 ;;--------------------------------------------------------------------------
 ;;自作関数
@@ -684,7 +684,7 @@
 ;; (install-elisp-from-emacswiki "recentf-ext.el")
 ;;--------------------------------------------------------------------------
 (setq recentf-max-saved-items 5000)
-(when windows-p (setq recentf-save-file "~/.recentf-win"))
+(when platform-windows-p (setq recentf-save-file "~/.recentf-win"))
 
 (recentf-mode 1)
 
@@ -1390,18 +1390,20 @@
 (set-language-environment 'Japanese)
 (prefer-coding-system 'utf-8)
 
-;; MetaキーをCommandボタンに変更
-;; CarbonからCocoaへ--Snow LeopardでEmacs 23を使う（3） - builder
-;; http://builder.japan.zdnet.com/os-admin/sp_snow-leopard-09/20410578/
-(setq ns-command-modifier (quote meta))
-(setq ns-alternate-modifier (quote super))
+(when platform-darwin-p
+  ;; MetaキーをCommandボタンに変更
+  ;; CarbonからCocoaへ--Snow LeopardでEmacs 23を使う（3） - builder
+  ;; http://builder.japan.zdnet.com/os-admin/sp_snow-leopard-09/20410578/
+  (setq ns-command-modifier (quote meta))
+  (setq ns-alternate-modifier (quote super))
 
-;; Cocoa Emacs(Emacs23)での日本語フォント設定
-;; http://macemacsjp.sourceforge.jp/index.php?MacFontSetting#h3b01bb4
-(create-fontset-from-ascii-font "Menlo-14:weight=normal:slant=normal" nil "menlokakugo")
-(set-fontset-font "fontset-menlokakugo" 'unicode (font-spec :family "Hiragino Kaku Gothic ProN" ) nil 'append)
-(add-to-list 'default-frame-alist '(font . "fontset-menlokakugo"))
-(setq face-font-rescale-alist '((".*Hiragino.*" . 1.2) (".*Menlo.*" . 1.0)))
+  ;; Cocoa Emacs(Emacs23)での日本語フォント設定
+  ;; http://macemacsjp.sourceforge.jp/index.php?MacFontSetting#h3b01bb4
+  (create-fontset-from-ascii-font "Menlo-14:weight=normal:slant=normal" nil "menlokakugo")
+  (set-fontset-font "fontset-menlokakugo" 'unicode (font-spec :family "Hiragino Kaku Gothic ProN" ) nil 'append)
+  (add-to-list 'default-frame-alist '(font . "fontset-menlokakugo"))
+  (setq face-font-rescale-alist '((".*Hiragino.*" . 1.2) (".*Menlo.*" . 1.0)))
+  )
 
 ;;--------------------------------------------------------------------------
 ;; smartrep
@@ -1504,8 +1506,11 @@
   (deferred:process-shell (format "growlnotify -m %s -t emacs" msg))  ; Growl(OSX)
   )
 
+(push )
+
 (setq auto-shell-command-setting
       '(("Documents/milkode/test/test_findgrep.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_findgrep.rb)")
+        ("Documents/milkode/test/test_cli.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cli.rb)")
         ("Documents/milkode/test/test_cdstk.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cdstk.rb)")
         ("Documents/milkode/test/test_package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)")
         ("Documents/milkode/test/test_util.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_util.rb)")
@@ -1518,6 +1523,8 @@
         ("Documents/milkode/test/test_cdstk.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cdstk.rb)")
         ("Documents/milkode/test/" "(cd ~/Documents/milkode/test/ && rake test)")
         ("Resources/"              "wget -O /dev/null http://0.0.0.0:9090/run")))
+
+(push '("*Auto Shell Command*" :height 20) popwin:special-display-config)
 
 ;;--------------------------------------------------------------------------
 ;;カーソル行を複製する、範囲選択時は範囲を複製
