@@ -12,6 +12,16 @@
 (require 'platform-p)
 
 ;;--------------------------------------------------------------------------
+;;package & MELPA
+;;--------------------------------------------------------------------------
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+(package-initialize)
+
+(require 'melpa)
+
+;;--------------------------------------------------------------------------
 ;;自作関数
 ;;-------------------------------------------------------------------------
 
@@ -567,7 +577,7 @@
 (autoload 'ruby-mode "ruby-mode"
   "Mode for editing ruby source files" t)
 (setq auto-mode-alist
-      (append '(("\\.rb$\\|\\.ru$\\|Rakefile$" . ruby-mode)) auto-mode-alist))
+      (append '(("\\.rb$\\|\\.ru$\\|Rakefile$\\|Gemfile$" . ruby-mode)) auto-mode-alist))
 (setq interpreter-mode-alist (append '(("ruby" . ruby-mode))
                                      interpreter-mode-alist))
 
@@ -1500,35 +1510,54 @@
 ;;--------------------------------------------------------------------------
 ;; auto-shell-command
 ;;--------------------------------------------------------------------------
+; (load-file "~/Documents/auto-shell-command/auto-shell-command.el")
 (require 'auto-shell-command)
 
-;; コマンドリスト(下が優先高)
-(ascmd:add '("Documents/milkode/test/" "(cd ~/Documents/milkode/test/ && rake test)"))
-(ascmd:add '("Documents/milkode/test/test_cdstk.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cdstk.rb)"))
-(ascmd:add '("Documents/milkode/test/test_findgrep.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_findgrep.rb)"))
-(ascmd:add '("Documents/milkode/test/test_cli.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cli.rb)"))
-(ascmd:add '("Documents/milkode/test/test_cdstk.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_cdstk.rb)"))
-(ascmd:add '("Documents/milkode/test/test_package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)"))
-(ascmd:add '("Documents/milkode/test/test_util.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_util.rb)"))
-(ascmd:add '("Documents/milkode/test/test_milkode_yaml.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_milkode_yaml.rb)"))
-(ascmd:add '("Documents/milkode/test/test_yaml_file_wrapper.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_yaml_file_wrapper.rb)"))
-(ascmd:add '("Documents/milkode/test/test_ignore_setting.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_ignore_setting.rb)"))
-(ascmd:add '("Documents/milkode/test/test_ignore_checker.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_ignore_checker.rb)"))
-(ascmd:add '("Documents/milkode/test/test_package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)"))
-(ascmd:add '("Documents/milkode/lib/milkode/cdstk/package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)"))
-(ascmd:add '("Resources/"              "wget -O /dev/null http://0.0.0.0:9090/run"))
+;; キーバインドの設定
+(global-set-key (kbd "C-c C-m") 'ascmd:toggle)      ; Temporarily on/off auto-shell-command run
+(global-set-key (kbd "C-c C-,") 'ascmd:popup)  ; Pop up '*Auto Shell Command*'
+(global-set-key (kbd "C-c C-.") 'ascmd:exec)   ; Exec-command specify file name
 
-;; Notify Growl (OSX)
-(defun auto-shell-command:notify (msg) (deferred:process-shell (format "growlnotify -m %s -t emacs" msg)))
+;; 結果の通知をGrowlで行う
+(when platform-darwin-p
+  (defun ascmd:notify (msg) (deferred:process-shell (format "growlnotify -m %s -t emacs" msg))))
 
-;; Popwin Setting
+;; エラー時のポップアップを見やすくする。 ※ (require 'popwin) が必要です。
 (push '("*Auto Shell Command*" :height 20) popwin:special-display-config)
+
+;; コマンドリストの設定 (下が優先高)
+(ascmd:add '("Documents/milkode/test/runner.rb" "rake test"))
+(ascmd:add '("Documents/milkode/test/.*\.rb" "ruby -I../lib -I../test $FILE"))
+(ascmd:add '("Documents/milkode/lib/milkode/cdstk/package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)"))
+(ascmd:add '("Resources/" "wget -O /dev/null http://0.0.0.0:9090/run"))
+(ascmd:add '("junk/.*\.rb" "ruby $FILE"))
 
 ;;--------------------------------------------------------------------------
 ;;カーソル行を複製する、範囲選択時は範囲を複製
 ;;--------------------------------------------------------------------------
-(require 'duplicate-thing)
+;; (require 'duplicate-thing) ; packageでインストールした時はrequireは要らないようだ
 (global-set-key (kbd "M-c") 'duplicate-thing) ; 元のキーはcapitalize-word
+
+;;--------------------------------------------------------------------------
+;;lispxmp
+;;--------------------------------------------------------------------------
+(require 'lispxmp)
+(define-key emacs-lisp-mode-map (kbd "C-c C-d") 'lispxmp)
+
+;;--------------------------------------------------------------------------
+;;paredit
+;;--------------------------------------------------------------------------
+(require 'paredit)
+(add-hook 'emacs-lisp-mode-hook 'enable-paredit-mode)
+(add-hook 'lisp-interaction-mode--hook 'enable-paredit-mode)
+(add-hook 'lisp-mode-hook 'enable-paredit-mode)
+(add-hook 'ielm-mode-hook 'enable-paredit-mode)
+
+;;--------------------------------------------------------------------------
+;;yaml-mode
+;;--------------------------------------------------------------------------
+(require 'yaml-mode)
+(add-to-list 'auto-mode-alist '("\\.yml$\\|\\.yaml$" . yaml-mode))
 
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1536,4 +1565,3 @@
 ;;プロジェクト毎の専用設定
 ;;-------------------------------------------------------------------------
 ;(load-file "project.el")
-

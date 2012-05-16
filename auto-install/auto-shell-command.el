@@ -3,7 +3,7 @@
 ;; Copyright (C) 2012 ongaeshi
 
 ;; Author: ongaeshi
-;; Keywords: shell, save, async, deferred
+;; Keywords: shell, save, async, deferred, auto
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -20,87 +20,222 @@
 
 ;;; Commentary:
 
-;; 
+;; Run the shell command asynchronously that you specified when you save the file. 
+;; And there flymake autotest, is Guard as a similar tool.
+
+;; Feature
+;;   1. Speicify targete file's regexp and command to execute when the save
+;;   2. Can temporarily suspend the execution of the command
+;;   3. Emacs is running on the OS of all work
+;;   4. It is possible to register a temporary command disappear restart Emacs
+;;   5. Caused by rewriting the file does not occur by external tools, malfunctions of the command disappointing
+
+;; URL
+;;   https://github.com/ongaeshi/auto-shell-command
+
+;;; Install:
+
+;; Require 'emacs-deferred'
+;;   (auto-install-from-url "https://github.com/kiwanami/emacs-deferred/raw/master/deferred.el")
+;;   (auto-install-from-url "https://raw.github.com/ongaeshi/auto-shell-command/master/auto-shell-command.el")
+
+;;; Initlial Setting:
+
+;; (require 'auto-shell-command)
+
+;; ;; Shortcut setting (Temporarily on/off auto-shell-command run)
+;; (global-set-key (kbd "C-c C-m") 'ascmd:toggle) ; Temporarily on/off auto-shell-command run
+;; (global-set-key (kbd "C-c C-,") 'ascmd:popup)  ; Pop up '*Auto Shell Command*'
+;; (global-set-key (kbd "C-c C-.") 'ascmd:exec)   ; Exec-command specify file name
+
+;; ;; ;; Easier to popup on errors (optional, need '(require 'popwin)')
+;; ;; (push '("*Auto Shell Command*" :height 20) popwin:special-display-config)
+;;
+;; ;; ;; Notification of results to Growl (optional)
+;; ;; (defun ascmd:notify (msg) (deferred:process-shell (format "growlnotify -m %s -t emacs" msg))))
+
+;;; Command-list Setting:
+
+;; ;; High priority under
+;; (ascmd:add '("/path/to/dir"                  "make"))     ; Exec 'make'
+;; (ascmd:add '("/path/to/dir/.gitignore"       "make run")) ; If you touch beneath the root folder '. gitignore' -> 'make run'
+;; (ascmd:add '("/path/to/dir/doc"              "make doc")) ; If you touch the folloing 'doc' -> 'make doc'
+;; (ascmd:add '("/path/to/dir/BBB"              "(cd /path/to/dir/AAA && make && cd ../BBB && make)")) ; When you build the BBB, need to build the first AAA
+
+;; Configuration example of Ruby
+;; (ascmd:add '("/path/test/runner.rb"          "rake test"))                     ; If you touch 'test/runner.rb' -> 'rake test' (Take time)
+;; (ascmd:add '("/path/test/test_/.*\.rb"       "ruby -I../lib -I../test $FILE")) ; If you touch 'test/test_*.rb', test by itself only the edited file (Time-saving)
+
+;; Cooperation with the browser
+;; (ascmd:add '("Resources/.*\.js" "wget -O /dev/null http://0.0.0.0:9090/run")) ; If you touch the following: 'Resources/*.js' access to 'http://0.0.0.0:9090/run'
 
 ;;; Code:
 
 (eval-when-compile (require 'cl))
 (require 'deferred)
 
-;;; Parameter:
+(setq ascmd:version "0.2")
 
-(defun auto-shell-command:notify (msg)
-  (message msg)                                                        ; simple
+;;; Public:
+
+;; Notify function
+(defun ascmd:notify (msg)
+  (message msg)                                                        ; emacs's message function
   ;;(deferred:process-shell (format "growlnotify -m %s -t emacs" msg)) ; Growl(OSX)
-  ;; (deferred:process-shell (format "growlnotify %s /t:emacs" msg))   ; Growl(Win)
+  ;;(deferred:process-shell (format "growlnotify %s /t:emacs" msg))   ; Growl(Win)
   )
 
-(defvar auto-shell-command:active t)
+;; Toggle after-save-hook (Recommended to set the key bindings)
+(defun ascmd:toggle ()
+  (interactive)
+  (if ascmd:active
+      (setq ascmd:active nil)
+    (setq ascmd:active t))
+  (force-mode-line-update nil))
 
-(defvar auto-shell-command:buffer-name "*Auto Shell Command*")
+(defvar ascmd:active t)
 
-;;; Main:
+;; Add to command list
+(defun ascmd:add (&optional v)
+  (interactive)
+  (cond (v
+         (push v ascmd:setting))
+        (t
+         (let (path command)
+           (setq path (read-file-name "Path: " nil (buffer-file-name))) 
+           (setq command (read-string "Command: "))
+           (let ((msg (format "(ascmd:add '(\"%s\" \"%s\"))" path command)))
+             (kill-new msg)
+             (message msg))
+           (push (list path command) ascmd:setting)))))
 
-(defun auto-shell-command:shell-deferred (arg &optional notify-start)
+;; Remove first command
+(defun ascmd:remove ()
+  (interactive)
+  (let* ((cmd (pop ascmd:setting))
+         (msg (format "(ascmd:add '(\"%s\" \"%s\"))" (car cmd) (car (cdr cmd)))))
+    (if cmd
+        (progn
+          (kill-new msg)
+          (message (format "Remove : %s" msg)))
+      (message "Command list is empty."))))
+
+;; Result buffer name
+(defvar ascmd:buffer-name "*Auto Shell Command*")
+
+;; Pop up '*Auto Shell Command*'
+(defun ascmd:popup (n)
+  (interactive "P")
+    (let ((with-arg (consp n)))
+      (if with-arg
+          (progn
+            (save-selected-window
+              (if (one-window-p)
+                  (select-window (split-window-horizontally))
+                (other-window 1))
+              (switch-to-buffer ascmd:buffer-name)))
+        ;; (display-buffer ascmd:buffer-name))))
+        (pop-to-buffer ascmd:buffer-name))))
+
+;; Exec-command specify file name
+(defun ascmd:exec ()
+  (interactive)
+  (ascmd:exec-in (read-file-name "Specify target file : " nil (buffer-file-name) nil)
+                 t))
+
+;;; Private:
+
+;; Command list
+(setq ascmd:setting nil)
+
+;; Exec-command when you save file
+(add-hook 'after-save-hook 'ascmd:exec-on-save)
+(defun ascmd:exec-on-save ()
+  (if ascmd:active
+      (ascmd:exec-in (buffer-file-name) nil)))
+
+(defun ascmd:exec-in (file-name find-file-p)
+  (if find-file-p
+      (find-file file-name))
+  (find-if '(lambda (v) (apply 'ascmd:exec1 file-name v)) ascmd:setting))
+
+;; ;; Experiment : To run the command without having to buffer switching
+;; (defun ascmd:exec-file-name (file-name)
+;;   (interactive "fSpecify target file :")
+;;   (lexical-let ((file-name file-name)
+;;                 (buffer (current-buffer)))
+;;     (deferred:$
+;;       (deferred:next
+;;         (lambda ()
+;;           (find-file file-name)                 ; Don't work when use 'save-window-excursion'
+;;           (find-if '(lambda (v) (apply 'ascmd:exec1 file-name v)) ascmd:setting)))
+;;       (deferred:wait 100)
+;;       (deferred:nextc it
+;;         (lambda () (switch-to-buffer buffer))))))
+
+(defun ascmd:exec1 (file-name path command)
+  (if (string-match (ascmd:expand-path path) (expand-file-name file-name))
+      (progn
+        (ascmd:shell-deferred (ascmd:query-reqplace command file-name))
+        ; (ascmd:shell-deferred command t) ; notify-start
+        t)
+    nil))
+
+(defun ascmd:expand-path (path)
+  (if (string-match "^~" path)
+      (expand-file-name path)
+    path))
+
+(defun ascmd:shell-deferred (arg &optional notify-start)
   (lexical-let ((arg arg)
                 (notify-start notify-start)
                 (result "success"))
     (deferred:$
       ;; before
       (deferred:next
-        (lambda () (if notify-start (auto-shell-command:notify "start"))))
+        (lambda ()
+          (if notify-start (ascmd:notify "start"))
+          (setq ascmd:process-count (+ ascmd:process-count 1))))
       ;; main
       (deferred:process-shell arg)
-      (deferred:error it (lambda (err) (setq result "failed") (pop-to-buffer auto-shell-command:buffer-name) err))
+      (deferred:error it (lambda (err) (setq result "failed") (pop-to-buffer ascmd:buffer-name) err))
       ;; after
       (deferred:nextc it
         (lambda (x)
-          (with-current-buffer (get-buffer-create auto-shell-command:buffer-name)
+          (with-current-buffer (get-buffer-create ascmd:buffer-name)
             (delete-region (point-min) (point-max))
-            (insert x))
-          (auto-shell-command:notify result))))))
+            (insert x)
+            (goto-char (point-min)))
+          (setq ascmd:process-count (- ascmd:process-count 1))
+          (ascmd:notify result))))))
 
-; 自動コンパイルのON/OFF
-(defun auto-shell-command:toggle ()
+;; query-replace special variable
+(defun ascmd:query-reqplace (command match-path)
+  (let (
+        (file-name (file-name-nondirectory match-path))
+        (dir-name  (file-name-directory match-path))
+        (command command)
+        )
+    (setq command (replace-regexp-in-string "$FILE" file-name command t))
+    (setq command (replace-regexp-in-string "$DIR" dir-name command t))
+    command))
+
+;; Display mode-line
+(setq ascmd:process-count 0)
+
+(defun ascmd:process-count-clear ()
   (interactive)
-  (if auto-shell-command:active
-      (setq auto-shell-command:active nil)
-    (setq auto-shell-command:active t))
-  (message "auto-shell-command %s" auto-shell-command:active))
+  (setq ascmd:process-count 0))
 
-;; @latertodo C-cC-mに割り当て(後で外すかも)
-(global-set-key "\C-c\C-m" 'auto-shell-command:toggle)
+(defun ascmd:display-process-count ()
+  (cond ((not ascmd:active) 
+         "[ascmd:stop]")
+        ((> ascmd:process-count 0)
+         (format "[ascmd:%d] " ascmd:process-count))
+        ))
 
-;; Command list
-(setq auto-shell-command:setting nil)
-
-;; Add command
-;; ex.
-;;   (setq auto-shell-command:setting
-;;         (("/path/to/dir/BBB/test" 'match-dir  "make test"                                ("cpp hpp"))
-;;          ("/path/to/dir/doc"      'match-dir  "make all doc"                             ("html"))
-;;          ("/path/to/dir/AAA"      'match-dir  "make all && (cd /path/to/dir/BBB/; make)")
-;;          ("/path/to/dir/BBB"      'match-dir  "(cd /path/to/dir/AAA/; make) && make")
-;;          ("/path/to/dir"          'buffer-dir "make")))
-(defun ascmd:add (v) (push v auto-shell-command:setting))
-
-; 一つのコマンドを実行
-(defun auto-shell-command:exec1 (path command)
-  (if (string-match path (buffer-file-name))
-      (progn
-        (auto-shell-command:shell-deferred command)
-        ; (auto-shell-command:shell-deferred command t) ; notify-start
-        t)
-    nil))
-
-; auto-shell-commandの実行
-(defun auto-shell-command:exec ()
-  (interactive)
-  (if auto-shell-command:active
-      (find-if '(lambda (v) (apply 'auto-shell-command:exec1 v)) auto-shell-command:setting)))
-
-; ファイルセーブ時にコンパイル
-(add-hook 'after-save-hook 'auto-shell-command:exec)
+(add-to-list 'default-mode-line-format
+             '(:eval (ascmd:display-process-count)))
 
 (provide 'auto-shell-command)
 ;;; auto-shell-command.el ends here
