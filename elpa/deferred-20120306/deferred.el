@@ -1,9 +1,11 @@
 ;;; deferred.el --- Simple asynchronous functions for emacs lisp
 
-;; Copyright (C) 2010, 2011  SAKURAI Masashi
+;; Copyright (C) 2010, 2011, 2012  SAKURAI Masashi
 
 ;; Author: SAKURAI Masashi <m.sakurai at kiwanami.net>
+;; Version: 0.3.1
 ;; Keywords: deferred, async
+;; URL: https://github.com/kiwanami/emacs-deferred
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -20,10 +22,12 @@
 
 ;;; Commentary:
 
-;; 'deferred.el' is a simple library for asynchronous tasks.  The API
-;; is almost the same as JSDeferred written by cho45. See the
+;; 'deferred.el' is a simple library for asynchronous tasks.
+;; [https://github.com/kiwanami/emacs-deferred]
+
+;; The API is almost the same as JSDeferred written by cho45. See the
 ;; JSDeferred and Mochikit.Async web sites for further documentations.
-;; [http://github.com/cho45/jsdeferred]
+;; [https://github.com/cho45/jsdeferred]
 ;; [http://mochikit.com/doc/html/MochiKit/Async.html]
 
 ;; A good introduction document (JavaScript)
@@ -56,7 +60,7 @@
 ;; ** Applications
 
 ;; *Inertial scrolling for Emacs
-;; [http://github.com/kiwanami/emacs-inertial-scroll]
+;; [https://github.com/kiwanami/emacs-inertial-scroll]
 
 ;; This program makes simple multi-thread function, using
 ;; deferred.el.
@@ -65,7 +69,7 @@
   (require 'cl))
 
 (defvar deferred:version nil "deferred.el version")
-(setq deferred:version "0.2")
+(setq deferred:version "0.3")
 
 ;;; Code:
 
@@ -101,6 +105,10 @@
 (defun deferred:cancelTimeout (id)
   "[internal] Timer cancellation function that emulates the `cancelTimeout' function in JS."
   (cancel-timer id))
+
+(defun deferred:run-with-idle-timer (sec f)
+  "[internal] Wrapper function for run-with-idle-timer."
+  (run-with-idle-timer sec nil f))
 
 (defun deferred:call-lambda (f &optional arg)
   "[internal] Call a function with one or zero argument safely.
@@ -167,7 +175,7 @@ in the asynchronous tasks.")
            (condition-case ,var ,protected-form ,@handlers)
          (setq debug-on-signal deferred:debug-on-signal-backup))))))
 
- 
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Back end functions of deferred tasks
@@ -245,7 +253,7 @@ Mainly this function is called by timer asynchronously."
         (sleep-for 0.05))
       last-value)))
 
- 
+
 
 ;; Struct: deferred
 ;; 
@@ -350,7 +358,7 @@ an argument value for execution of the deferred task."
    (t
     next)))
 
- 
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Basic functions for deferred objects
@@ -458,6 +466,25 @@ monitoring of tasks."
             (deferred:default-cancel x)))
     d))
 
+(defun deferred:wait-idle (msec)
+  "Return a deferred object which will run when Emacs has been
+idle for MSEC millisecond."
+  (lexical-let 
+      ((d (deferred:new)) (start-time (float-time)) timer)
+    (deferred:message "WAIT-IDLE : %s" msec)
+    (setq timer 
+          (deferred:run-with-idle-timer 
+            (/ msec 1000.0) 
+            (lambda ()
+              (deferred:exec-task d 'ok 
+                (* 1000.0 (- (float-time) start-time)))
+              nil)))
+    (setf (deferred-cancel d)
+          (lambda (x)
+            (deferred:cancelTimeout timer)
+            (deferred:default-cancel x)))
+    d))
+
 (defun deferred:call (f &rest args)
   "Call the given function asynchronously."
   (lexical-let ((f f) (args args))
@@ -472,7 +499,7 @@ monitoring of tasks."
       (lambda (x)
         (apply f args)))))
 
- 
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utility functions
@@ -683,7 +710,7 @@ task FINALLY should be called."
       (setq chain (append chain `((deferred:watch it ,finally)))))
     `(deferred:$ ,d ,@chain)))
 
- 
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application functions

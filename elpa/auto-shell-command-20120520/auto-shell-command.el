@@ -1,9 +1,11 @@
-;;; auto-shell-command.el --- 
+;;; auto-shell-command.el --- Run the shell command asynchronously that you specified when you save the file. 
 
 ;; Copyright (C) 2012 ongaeshi
 
 ;; Author: ongaeshi
 ;; Keywords: shell, save, async, deferred, auto
+;; Version: 0.3.2
+;; Package-Requires: ((deferred "0.3.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -74,11 +76,10 @@
 (eval-when-compile (require 'cl))
 (require 'deferred)
 
-(setq ascmd:version "0.2")
-
 ;;; Public:
 
 ;; Notify function
+;;;###autoload
 (defun ascmd:notify (msg)
   (message msg)                                                        ; emacs's message function
   ;;(deferred:process-shell (format "growlnotify -m %s -t emacs" msg)) ; Growl(OSX)
@@ -86,6 +87,7 @@
   )
 
 ;; Toggle after-save-hook (Recommended to set the key bindings)
+;;;###autoload
 (defun ascmd:toggle ()
   (interactive)
   (if ascmd:active
@@ -96,6 +98,7 @@
 (defvar ascmd:active t)
 
 ;; Add to command list
+;;;###autoload
 (defun ascmd:add (&optional v)
   (interactive)
   (cond (v
@@ -110,6 +113,7 @@
            (push (list path command) ascmd:setting)))))
 
 ;; Remove first command
+;;;###autoload
 (defun ascmd:remove ()
   (interactive)
   (let* ((cmd (pop ascmd:setting))
@@ -120,10 +124,17 @@
           (message (format "Remove : %s" msg)))
       (message "Command list is empty."))))
 
+;; Remove all command
+;;;###autoload
+(defun ascmd:remove-all ()
+  (interactive)
+  (setq ascmd:setting nil))
+
 ;; Result buffer name
 (defvar ascmd:buffer-name "*Auto Shell Command*")
 
 ;; Pop up '*Auto Shell Command*'
+;;;###autoload
 (defun ascmd:popup (n)
   (interactive "P")
     (let ((with-arg (consp n)))
@@ -138,15 +149,21 @@
         (pop-to-buffer ascmd:buffer-name))))
 
 ;; Exec-command specify file name
+;;;###autoload
 (defun ascmd:exec ()
   (interactive)
   (ascmd:exec-in (read-file-name "Specify target file : " nil (buffer-file-name) nil)
                  t))
 
+;;;###autoload
+(defun ascmd:process-count-clear ()
+  (interactive)
+  (setq ascmd:process-queue nil))
+
 ;;; Private:
 
 ;; Command list
-(setq ascmd:setting nil)
+(defvar ascmd:setting nil)
 
 ;; Exec-command when you save file
 (add-hook 'after-save-hook 'ascmd:exec-on-save)
@@ -159,25 +176,14 @@
       (find-file file-name))
   (find-if '(lambda (v) (apply 'ascmd:exec1 file-name v)) ascmd:setting))
 
-;; ;; Experiment : To run the command without having to buffer switching
-;; (defun ascmd:exec-file-name (file-name)
-;;   (interactive "fSpecify target file :")
-;;   (lexical-let ((file-name file-name)
-;;                 (buffer (current-buffer)))
-;;     (deferred:$
-;;       (deferred:next
-;;         (lambda ()
-;;           (find-file file-name)                 ; Don't work when use 'save-window-excursion'
-;;           (find-if '(lambda (v) (apply 'ascmd:exec1 file-name v)) ascmd:setting)))
-;;       (deferred:wait 100)
-;;       (deferred:nextc it
-;;         (lambda () (switch-to-buffer buffer))))))
-
 (defun ascmd:exec1 (file-name path command)
   (if (string-match (ascmd:expand-path path) (expand-file-name file-name))
       (progn
-        (ascmd:shell-deferred (ascmd:query-reqplace command file-name))
-        ; (ascmd:shell-deferred command t) ; notify-start
+        (let ((command (ascmd:query-reqplace command file-name t))
+              (process-exec-p (ascmd:process-exec-p)))
+          (ascmd:add-command-queue command)
+          (unless process-exec-p
+            (ascmd:shell-deferred command)))
         t)
     nil))
 
@@ -194,8 +200,7 @@
       ;; before
       (deferred:next
         (lambda ()
-          (if notify-start (ascmd:notify "start"))
-          (setq ascmd:process-count (+ ascmd:process-count 1))))
+          (if notify-start (ascmd:notify "start"))))
       ;; main
       (deferred:process-shell arg)
       (deferred:error it (lambda (err) (setq result "failed") (pop-to-buffer ascmd:buffer-name) err))
@@ -205,33 +210,43 @@
           (with-current-buffer (get-buffer-create ascmd:buffer-name)
             (delete-region (point-min) (point-max))
             (insert x)
-            (goto-char (point-min)))
-          (setq ascmd:process-count (- ascmd:process-count 1))
-          (ascmd:notify result))))))
+            ;(goto-char (point-min))
+            )
+          (ascmd:notify result)
+          (pop ascmd:process-queue)
+          (force-mode-line-update nil)
+          (if (ascmd:process-exec-p)
+              (ascmd:shell-deferred (car ascmd:process-queue))))))))
+
+(defvar ascmd:process-queue nil)
+
+(defun ascmd:add-command-queue (arg)
+  (setq ascmd:process-queue (append ascmd:process-queue (list arg))))
 
 ;; query-replace special variable
-(defun ascmd:query-reqplace (command match-path)
+(defun ascmd:query-reqplace (command match-path &optional cd-prefix-p)
   (let (
         (file-name (file-name-nondirectory match-path))
         (dir-name  (file-name-directory match-path))
-        (command command)
-        )
+        (command (if cd-prefix-p
+                     (concat "cd $DIR && (" command ")")
+                     command)))
     (setq command (replace-regexp-in-string "$FILE" file-name command t))
     (setq command (replace-regexp-in-string "$DIR" dir-name command t))
     command))
 
 ;; Display mode-line
-(setq ascmd:process-count 0)
+(defun ascmd:process-count ()
+  (length ascmd:process-queue))
 
-(defun ascmd:process-count-clear ()
-  (interactive)
-  (setq ascmd:process-count 0))
+(defun ascmd:process-exec-p ()
+  (not (null ascmd:process-queue)))
 
 (defun ascmd:display-process-count ()
   (cond ((not ascmd:active) 
          "[ascmd:stop]")
-        ((> ascmd:process-count 0)
-         (format "[ascmd:%d] " ascmd:process-count))
+        ((ascmd:process-exec-p)
+         (format "[ascmd:%d] " (ascmd:process-count)))
         ))
 
 (add-to-list 'default-mode-line-format

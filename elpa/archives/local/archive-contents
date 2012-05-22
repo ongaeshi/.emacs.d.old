@@ -1,0 +1,16 @@
+(1
+ (deferred .
+   [(20120521)
+    nil "Simple asynchronous functions for emacs lisp [source: github]" single])
+ (auto-shell-command .
+                     [(20120520)
+                      ((deferred
+                         (0 3 1)))
+                      "Run the shell command asynchronously that you specified when you save the file.  [source: github]" single])
+ (duplicate-thing .
+                  [(20120516)
+                   nil "Duplicate current line & selection [source: github]" single])
+ (yaml-mode .
+            [(20120228)
+             nil "Major mode for editing YAML files [source: github]" single]))
+

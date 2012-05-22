@@ -1225,7 +1225,6 @@
 (add-to-list 'auto-mode-alist '("\\.scss$" . scss-mode))
 (setq scss-compile-at-save nil)
 
-
 ;;--------------------------------------------------------------------------
 ;; popwin.el
 ;; (auto-install-from-url "https://github.com/m2ym/popwin-el/raw/master/popwin.el")
@@ -1510,8 +1509,8 @@
 ;;--------------------------------------------------------------------------
 ;; auto-shell-command
 ;;--------------------------------------------------------------------------
-; (load-file "~/Documents/auto-shell-command/auto-shell-command.el")
-(require 'auto-shell-command)
+;; (load-file "~/Documents/auto-shell-command/auto-shell-command.el")
+;; (require 'auto-shell-command)
 
 ;; キーバインドの設定
 (global-set-key (kbd "C-c C-m") 'ascmd:toggle)      ; Temporarily on/off auto-shell-command run
