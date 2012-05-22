@@ -726,283 +726,32 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;anything
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'anything-config)
-(require 'anything-match-plugin)
-(require 'anything-complete)
+(require 'anything-startup)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;anything-gtags
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'anything-gtags)
-;(setq anything-gtags-classify t) ; <-- これなんだろ？
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;anything-c-moccur
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'anything-c-moccur)
-
-;; カスタマイズ可能変数の設定(M-x customize-group anything-c-moccur でも設定可能)
-(setq anything-c-moccur-anything-idle-delay 0.2 ;`anything-idle-delay'
-      anything-c-moccur-higligt-info-line-flag t ; `anything-c-moccur-dmoccur'などのコマンドでバッファの情報をハイライトする
-      anything-c-moccur-enable-auto-look-flag t ; 現在選択中の候補の位置を他のwindowに表示する
-      anything-c-moccur-enable-initial-pattern t) ; `anything-c-moccur-occur-by-moccur'の起動時にポイントの位置の単語を初期パターンにする
-
-;;; キーバインドの割当(好みに合わせて設定してください)
-
-;バッファ内検索
-(global-set-key (kbd "C-x o") 'anything-c-moccur-occur-by-moccur)
-
-;ディレクトリ
-(global-set-key (kbd "C-x O") 'anything-c-moccur-dmoccur) 
-
-;diredで選択したファイルに対して検索
-(add-hook 'dired-mode-hook ;dired
-          '(lambda ()
-             (local-set-key (kbd "O") 'anything-c-moccur-dired-do-moccur-by-moccur)))
-
-; anything-mode中の移動処理
-(add-hook 'anything-mode-hook
-          '(lambda ()
-             (local-set-key (kbd "O") 'anything-c-moccur-dired-do-moccur-by-moccur)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;anythingのキーバインドを設定
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;(global-set-key (kbd "C-,") 'anything-at-point)
-(global-set-key (kbd "C-,") 'anything-filelist+)
-(global-set-key (kbd "C-c C-,") 'anything-resume)
-
-(define-key anything-map "\C-\M-n" 'anything-next-source)
-(define-key anything-map "\C-\M-p" 'anything-previous-source)
-(define-key anything-map "\C-z"    'anything-execute-persistent-action)
-;(define-key anything-map "C-i"     'anything-select-action)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;実験的なanything-c-source
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun current-line ()
-  "Return the vertical position of point..."
-  (1+ (count-lines 1 (point))))
-
-(defun max-line ()
-  "Return the vertical position of point..."
-  (save-excursion
-    (goto-char (point-max))
-    (current-line)))
-
-;; 特定行に移動
-(setq anything-c-source-goto-line
-  '((name . "Goto line")
-    (filtered-candidate-transformer . (lambda (candidates source)
-					(if (string-match "^[0-9]*$" anything-pattern)
-					    (with-current-buffer anything-current-buffer
-					      (if (>= (max-line) (string-to-number anything-pattern))
-						  (list (concat "line number: " anything-pattern))
-						nil))
-					  nil)
-					))
-    (action . (("Goto line" . (lambda (arg)
-			       (if (string-match "[0-9]*$" arg)
-				   (progn
-				     (let ((line-number (string-to-number (match-string 0 arg))))
-				       (goto-line line-number))))))))
+; anything-for-filesの内容をカスタマイズ、anything-c-source-locateを除外
+(setq anything-for-files-prefered-list
+  '(anything-c-source-ffap-line
+    anything-c-source-ffap-guesser
+    anything-c-source-buffers+
+    anything-c-source-recentf
+    anything-c-source-bookmarks
+    anything-c-source-file-cache
+    anything-c-source-files-in-current-dir+
+    ;; anything-c-source-locate
     ))
 
-;; mark-ring
-(defvar anything-c-source-mark-ring
-  '((name . "mark-ring")
-    (candidates . anything-c-source-mark-ring-candidates)
-    (action . (("Goto line" . (lambda (candidate)
-                                (goto-line (string-to-number candidate))))))
-    (persistent-action . (lambda (candidate)
-                           (switch-to-buffer anything-current-buffer)
-                           (goto-line (string-to-number candidate))
-                           (set-window-start (get-buffer-window anything-current-buffer) (point))))))
-(defun anything-c-source-mark-ring-candidates ()
-  (with-current-buffer anything-current-buffer
-    (let* ((marks (cons (mark-marker) mark-ring))
-           (lines (mapcar (lambda (pos)
-                            (save-excursion
-                              (goto-char pos)
-                              (beginning-of-line)
-                              (let ((line  (car (split-string (thing-at-point 'line) "[\n\r]"))))
-                                (when (string= "" line)
-                                  (setq line  "<EMPTY LINE>"))
-                                (format "%7d: %s" (line-number-at-pos) line))))
-                          marks)))
-      lines)))
+(global-set-key (kbd "C-,") 'anything-for-files)
+(global-set-key (kbd "C-:") 'anything-resume)
+;(global-set-key "\M-q" 'anything-regexp)
+;(global-set-key (kbd "M-y") 'anything-show-kill-ring)
 
+;; 条件付き起動
+(anything-complete-shell-history-setup-key (kbd "M-r")) ; C-r だと shell-mode の時に後方検索が出来なくなる
 
-
-;; global-mark-ring
-(defvar anything-c-source-global-mark-ring
-  '((name . "global-mark-ring")
-    (candidates . anything-c-source-global-mark-ring-candidates)
-    (action . (("Goto line" . (lambda (candidate)
-                                (let ((items (split-string candidate ":")))
-                                  (switch-to-buffer (second items))
-                                  (goto-line (string-to-number (car items))))))))
-    
-    (persistent-action . (lambda (candidate)
-                           (let ((items (split-string candidate ":")))
-                             (switch-to-buffer (second items))
-                             (goto-line (string-to-number (car items)))
-                             (set-window-start (get-buffer-window anything-current-buffer) (point)))))))
-
-(defun anything-c-source-global-mark-ring-candidates ()
-  (let* ((marks global-mark-ring)
-         (lines (mapcar (lambda (pos)
-                          (if (or (string-match "^ " (format "%s" (marker-buffer pos)))
-                                  (null (marker-buffer pos)))
-                              nil
-                            (save-excursion
-                              (set-buffer (marker-buffer pos))
-                              (goto-char pos)
-                              (beginning-of-line)
-                              (let ((line  (car (split-string (thing-at-point 'line) "[\n\r]"))))
-                                (when (string= "" line)
-                                  (setq line  "<EMPTY LINE>"))
-                                (format "%7d:%s:    %s" (line-number-at-pos) (marker-buffer pos) line)))))
-                        marks)))
-    (delq nil lines)))
-
-;; anythingから直接google検索(メニューを挟まない版)
-(defvar anything-c-source-anything-google-fallback
-  '((name . "Google fallback")
-    (dummy)
-    (action . (lambda (x) (google x t)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;anything-sourceを選択してanythingを起動するanything-source
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar anything-c-source-call-source
-  `((name . "call source")
-    (init . (lambda ()
-              (with-current-buffer (anything-candidate-buffer 'global)
-                (let ((sources (loop for sym being symbols
-                                     for s = (symbol-name sym)
-                                     when (string-match "^anything-c-source-" s)
-                                     collect s)))
-                  (insert (mapconcat 'identity sources "\n"))))))
-    (candidates-in-buffer)
-    (action . (("invoke anything with selected source" .
-                (lambda (candidate)
-                  (let ((source-sym (intern candidate)))
-                    (when (anything-c-call-source-p source-sym)
-                      (anything (list source-sym))))))
-               ))))
-
-(defun anything-c-call-source-p (sym)
-  (let ((source (symbol-value sym)))
-    (assq 'name source)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;anything、ページ切り替えの仕組み
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defvar anything-sources-list nil
-  "anything sources list. for anything-select-sources-list")
-
-(defun anything-select-sources-list (num)
-  (anything-set-sources (nth num anything-sources-list)))
-
-; anything-select-with-digit-shortcut とキーバインドが被ってしまっているが、他にいいキーバインドが見付からなかったのでやむなく・・・。
-(define-key anything-map (kbd "C-1") '(lambda () (interactive) (anything-select-sources-list 0)))
-(define-key anything-map (kbd "C-2") '(lambda () (interactive) (anything-select-sources-list 1)))
-(define-key anything-map (kbd "C-3") '(lambda () (interactive) (anything-select-sources-list 2)))
-(define-key anything-map (kbd "C-4") '(lambda () (interactive) (anything-select-sources-list 3)))
-(define-key anything-map (kbd "C-5") '(lambda () (interactive) (anything-select-sources-list 4)))
-(define-key anything-map (kbd "C-6") '(lambda () (interactive) (anything-select-sources-list 5)))
-(define-key anything-map (kbd "C-7") '(lambda () (interactive) (anything-select-sources-list 6)))
-(define-key anything-map (kbd "C-8") '(lambda () (interactive) (anything-select-sources-list 7)))
-(define-key anything-map (kbd "C-9") '(lambda () (interactive) (anything-select-sources-list 8)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; anythingを利用して、rubyのプログラムをリアルタイムに実行させる
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun anything-c-has-print (input)
-  (if (string-match "print\\|puts" input)
-      t
-    nil))
-
-(defun anything-c-ruby-command (command)
-  (if (anything-c-has-print command)
-      command
-    (concat "p " command)))
-
-(defvar anything-c-source-ruby
-  '((name . "ruby command")
-    (candidates . (lambda ()
-                    (start-process "ruby-process" nil
-				   "ruby" "-e" (anything-c-ruby-command anything-input))))
-    (requires-pattern . 3)
-    (delayed)
-    (action . (("Run Ruby" . (lambda (candidate)
-			       (switch-to-buffer-other-window (get-buffer-create "*anything result*"))
-			       (point-max)
-			       (insert (concat (anything-c-ruby-command anything-input) "\n# -- result --\n"))
-			       (start-process "ruby-process" "*anything result*"
-					      "ruby" "-e" (anything-c-ruby-command anything-input))))))
-    )
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 仮引数を渡して起動すると、カーソル位置の単語を拾い出してanythingの入力に渡してくれます
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun anything-at-point (arg)
-  (interactive "P")
-  (if arg
-      (anything nil (thing-at-point 'symbol))
-    (anything)))
-
-;;--------------------------------------------------------------------------
-;; anything-include
-;;--------------------------------------------------------------------------
-(require 'anything-include)
-(setq anything-include-max-saved-items 1000)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;anythingソースの設定
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-; ソースの設定
-(setq anything-sources
-      (list anything-c-source-buffers
-            anything-c-source-goto-line
-            anything-c-source-recentf
-            anything-c-source-include
-            anything-c-source-files-in-current-dir
-            anything-c-source-gtags-select
-            anything-c-source-emacs-commands
-            anything-c-source-info-pages
-            anything-c-source-bookmarks
-	    ))
-
-(setq anything-sources-for-file
-      (list anything-c-source-locate))
-
-(setq anything-sources-for-emacs
-      (list anything-c-source-emacs-commands
-	    anything-c-source-emacs-functions
-            anything-c-source-apropos-emacs-variables
-            anything-c-source-complex-command-history
-	    anything-c-source-call-source))
-  
-(setq anything-sources-for-internet
-      (list anything-c-source-anything-google-fallback))
-  
-(setq anything-sources-for-program
-      (list anything-c-source-calculation-result
-            anything-c-source-evaluation-result
-            anything-c-source-ruby))
-
-; anythingソースのリスト
-; anything-select-sources-listのページ番号に対応する
-(setq anything-sources-list
-      (list anything-sources
-	    anything-sources-for-file
-	    anything-sources-for-emacs
-	    anything-sources-for-internet
-            anything-sources-for-program))
+;; C-x a をanytingのプレフィックスに置き換える、というのは迷わないでよさそう
+(global-set-key [(control x) (a) (a)] 'anything-apropos) 
+(global-set-key [(control x) (a) (g)] 'anything-google-suggest)
+(global-set-key [(control x) (a) (y)] 'anything-show-kill-ring)
 
 ;;--------------------------------------------------------------------------
 ;; タブのかわりにスペースを使用
