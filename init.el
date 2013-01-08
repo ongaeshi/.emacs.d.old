@@ -16,7 +16,7 @@
 ;;--------------------------------------------------------------------------
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+;; (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 (package-initialize)
 
 (require 'melpa)
@@ -453,7 +453,8 @@
 
 ;置換
 (global-set-key "\C-q" 'query-replace)
-(global-set-key "\M-q" 'query-replace-regexp)
+;; (global-set-key "\M-q" 'query-replace-regexp)
+(global-set-key "\M-q" 'replace-string)
 
 ;最後のキーボードマクロを呼び出す
 (global-set-key "\C-t" 'call-last-kbd-macro)
@@ -753,6 +754,40 @@
 (global-set-key [(control x) (a) (g)] 'anything-google-suggest)
 (global-set-key [(control x) (a) (y)] 'anything-show-kill-ring)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;anything-git-project
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun anything-c-sources-git-project-for (pwd)
+  (loop for elt in
+        '(("Modified files (%s)" . "--modified")
+          ("Untracked files (%s)" . "--others --exclude-standard")
+          ("All controlled files in this project (%s)" . ""))
+        collect
+        `((name . ,(format (car elt) pwd))
+          (init . (lambda ()
+                    (unless (and ,(string= (cdr elt) "") ;update candidate buffer every time except for that of all project files
+                                 (anything-candidate-buffer))
+                      (with-current-buffer
+                          (anything-candidate-buffer 'global)
+                        (insert
+                         (shell-command-to-string
+                          ,(format "git ls-files $(git rev-parse --show-cdup) %s"
+                                   (cdr elt))))))))
+          (candidates-in-buffer)
+          (type . file))))
+
+(defun anything-git-project ()
+  (interactive)
+  (let* ((pwd default-directory)
+         (sources (anything-c-sources-git-project-for pwd)))
+    (anything-other-buffer sources
+     ;; (format "*Anything git project in %s*" pwd))))
+     (format "*anything git project*"))))
+;; (define-key global-map (kbd "C-;") 'anything-git-project)
+
+;; 
+(global-set-key [(control x) (a) (g)] 'anything-git-project)
+
 ;;--------------------------------------------------------------------------
 ;; タブのかわりにスペースを使用
 ;;--------------------------------------------------------------------------
@@ -986,9 +1021,12 @@
 ;(push '("*Shell Command Output*" :height 20 :position top) popwin:special-display-config)
 
 (setq anything-samewindow nil)
-(push '("*anything*" :height 20) popwin:special-display-config)
-(push '("*anything for files*" :height 20) popwin:special-display-config)
-(push '("*anything file list*" :height 20) popwin:special-display-config)
+(push '("*anything*"             :height 20) popwin:special-display-config)
+(push '("*anything for files*"   :height 20) popwin:special-display-config)
+(push '("*anything apropos*"     :height 30) popwin:special-display-config)
+(push '("*anything kill-ring*"   :height 20) popwin:special-display-config)
+(push '("*anything google*"      :height 20) popwin:special-display-config)
+(push '("*anything git project*" :height 20) popwin:special-display-config)
 
 (push '("*scratch*") popwin:special-display-config)
 (push '("svnlog.txt") popwin:special-display-config)
@@ -1274,9 +1312,12 @@
 (push '("*Auto Shell Command*" :height 20) popwin:special-display-config)
 
 ;; コマンドリストの設定 (下が優先高)
+(ascmd:add '("Documents/milkode/test/.*\.rb$" "ruby -I../lib -I../test ./rake_test_loader.rb $FILE"))
 (ascmd:add '("Documents/milkode/test/runner.rb" "rake test"))
-(ascmd:add '("Documents/milkode/test/.*\.rb" "ruby -I../lib -I../test $FILE"))
 (ascmd:add '("Documents/milkode/lib/milkode/cdstk/package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)"))
+
+(ascmd:add '("Documents/qiita_mail/test/.*\.rb" "ruby -I../lib -I../test $FILE"))
+
 (ascmd:add '("Resources/" "wget -O /dev/null http://0.0.0.0:9090/run"))
 (ascmd:add '("junk/.*\.rb" "ruby $FILE"))
 
@@ -1306,6 +1347,91 @@
 ;;--------------------------------------------------------------------------
 (require 'yaml-mode)
 (add-to-list 'auto-mode-alist '("\\.yml$\\|\\.yaml$" . yaml-mode))
+
+;;--------------------------------------------------------------------------
+;;magit
+;;--------------------------------------------------------------------------
+(global-set-key (kbd "C-x v d") 'magit-status)
+
+;;--------------------------------------------------------------------------
+;;auto-highlight-symbol
+;;--------------------------------------------------------------------------
+(require 'auto-highlight-symbol)
+(global-auto-highlight-symbol-mode t)
+
+;;--------------------------------------------------------------------------
+;;auto-save-buffers-enhanced
+;;--------------------------------------------------------------------------
+(require 'auto-save-buffers-enhanced)
+(setq auto-save-buffers-enhanced-interval 1) ; 指定のアイドル秒で保存
+(auto-save-buffers-enhanced t)
+
+;;--------------------------------------------------------------------------
+;;milkode
+;;--------------------------------------------------------------------------
+(require 'milkode)
+(global-set-key (kbd "M-g") 'milkode:search)
+
+;;--------------------------------------------------------------------------
+;;markdown
+;;--------------------------------------------------------------------------
+(require 'markdown-mode)
+(add-to-list 'auto-mode-alist '("\\.md$\\|\\.markdown$" . markdown-mode))
+
+;; 変更出来ない・・
+;; (add-hook 'markdown-mode-hook
+;;           '(lambda ()
+;;              (define-key markdown-mode-map [M-n] 'scroll-next-10-line)
+;;              (define-key markdown-mode-map [M-p] 'scroll-previous-10-line)))
+
+;;--------------------------------------------------------------------------
+;; expand-region
+;;--------------------------------------------------------------------------
+(require 'expand-region)
+(global-set-key (kbd "C-@") 'er/expand-region)
+(global-set-key (kbd "C-M-@") 'er/contract-region)
+
+;;--------------------------------------------------------------------------
+;; mark-multiple
+;;--------------------------------------------------------------------------
+(require 'inline-string-rectangle)
+(global-set-key (kbd "C-x r t") 'inline-string-rectangle)
+
+(require 'mark-more-like-this)
+(global-set-key (kbd "C-<") 'mark-previous-like-this)
+(global-set-key (kbd "C->") 'mark-next-like-this)
+;; (global-set-key (kbd "C-M-m") 'mark-more-like-this) ; like the other two, but takes an argument (negative is previous)
+(global-set-key (kbd "C-*") 'mark-all-like-this)
+
+;; (add-hook 'sgml-mode-hook
+;;           (lambda ()
+;;             (require 'rename-sgml-tag)
+;;             (define-key sgml-mode-map (kbd "C-c C-r") 'rename-sgml-tag)))
+(add-hook 'html-mode-hook
+          (lambda ()
+            (require 'rename-sgml-tag)
+            (define-key html-mode-map (kbd "C-c C-r") 'rename-sgml-tag)))
+
+;;--------------------------------------------------------------------------
+;; winden-window
+;;--------------------------------------------------------------------------
+;; (require 'widen-window)
+;; (global-widen-window-mode t)
+
+;; ;; windmove-default-keybindings に対応
+;; (setq ww-advised-functions
+;;       (append ww-advised-functions
+;; 	      '(windmove-up
+;; 		windmove-down
+;; 		windmove-right
+;; 		windmove-left)))
+
+;; ;; anythingとの相性を修正
+;; (defadvice anything (around disable-ww-mode activate)
+;;   (ad-deactivate-regexp "widen-window")
+;;   (unwind-protect
+;;       ad-do-it
+;;     (ad-activate-regexp "widen-window")))
 
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

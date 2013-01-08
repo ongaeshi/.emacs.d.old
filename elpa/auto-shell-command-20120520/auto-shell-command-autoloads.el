@@ -5,7 +5,7 @@
 
 ;;;### (autoloads (ascmd:process-count-clear ascmd:exec ascmd:popup
 ;;;;;;  ascmd:remove-all ascmd:remove ascmd:add ascmd:toggle ascmd:notify)
-;;;;;;  "auto-shell-command" "auto-shell-command.el" (20411 43629))
+;;;;;;  "auto-shell-command" "auto-shell-command.el" (20411 52435))
 ;;; Generated autoloads from auto-shell-command.el
 
 (autoload 'ascmd:notify "auto-shell-command" "\
@@ -50,8 +50,8 @@ Not documented
 
 ;;;***
 
-;;;### (autoloads nil nil ("auto-shell-command-pkg.el") (20411 43629
-;;;;;;  634353))
+;;;### (autoloads nil nil ("auto-shell-command-pkg.el") (20411 52435
+;;;;;;  191982))
 
 ;;;***
 

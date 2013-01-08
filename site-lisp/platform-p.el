@@ -1,9 +1,12 @@
 ;; Check platform & emacs-version
 
-;; Ref
+;; URL:
+;;   https://github.com/ongaeshi/platform-p
+
+;; Reference:
 ;;   http://d.hatena.ne.jp/tomoya/20090807/1249601308
 
-;; Sample
+;; Usage:
 ;; (require 'platform-p)
 ;;
 ;; (when platform-darwin-p
