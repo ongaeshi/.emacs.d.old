@@ -1370,7 +1370,7 @@
 ;;milkode
 ;;--------------------------------------------------------------------------
 (require 'milkode)
-(global-set-key (kbd "M-g") 'milkode:search)
+;; (global-set-key (kbd "M-g") 'milkode:search)
 
 ;;--------------------------------------------------------------------------
 ;;markdown
@@ -1432,6 +1432,21 @@
 ;;   (unwind-protect
 ;;       ad-do-it
 ;;     (ad-activate-regexp "widen-window")))
+
+;;--------------------------------------------------------------------------
+;; anything-milkode
+;;--------------------------------------------------------------------------
+(require 'anything-milkode)
+(setq anything-grep-multiline nil)                                            ; Use anything-grep single line mode
+
+;; Shortcut setting
+(global-set-key (kbd "M-g")     'anything-milkode)                                
+(global-set-key (kbd "M-j")     'milkode:jump)                                ; 元のキーは indent-new-comment-line
+(global-set-key (kbd "C-x a f") 'anything-milkode-files)
+
+;; For popwin
+(push '("*anything milkode*"       :height 20) popwin:special-display-config) 
+(push '("*anything milkode files*" :height 20) popwin:special-display-config)
 
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

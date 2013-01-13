@@ -3,8 +3,8 @@
 ;; Copyright (C) 2012 ongaeshi
 
 ;; Author: ongaeshi
-;; Keywords: milkode, search, keyword, tag, jump, direct
-;; Version: 0.1.1
+;; Keywords: milkode, search, grep, jump, keyword
+;; Version: 0.2
 ;; Package-Requires:
 
 ;; Permission is hereby granted, free of charge, to any person obtaining
@@ -32,7 +32,7 @@
 ;; Milkode(http://milkode.ongaeshi.me) of the installation is required. 
 
 ;; Feature
-;;   1. Search (milkode:search). Jump to row C-cC-c.
+;;   1. Search (milkode:search). Jump to row C-c C-c.
 ;;   2. When you search for direct pass ('/path/to/dir:15') jump directly to the specified row.
 ;;   3. Move the cursor to direct pass on a text file, (milkode:search) can jump
 ;;
@@ -65,35 +65,55 @@
   (if milkode:windows-p "gmilk.bat" "gmilk")
   "gmilk command.")
 
+(defvar milk-command
+  (if milkode:windows-p "milk.bat" "milk")
+  "milk command.")
+
 ;;; Public:
 
 ;;;###autoload
 (defun milkode:search ()
   (interactive)
+  (let ((input (read-string "gmilk: " (thing-at-point 'symbol) 'milkode:history)))
+    (milkode:grep input)))
+
+;;;###autoload
+(defun milkode:jump ()
+  (interactive)
   (let ((at-point (thing-at-point 'filename)))
     (if (milkode:is-directpath at-point)
         (progn
           (setq milkode:history (cons at-point milkode:history)) 
-          (milkode:jump at-point)) 
-      (let ((input (read-string "gmilk: " (thing-at-point 'symbol) 'milkode:history)))
+          (milkode:jump-directpath at-point)) 
+      (let ((input (read-string "milk jump: " (thing-at-point 'symbol) 'milkode:history)))
         (if (milkode:is-directpath input)
-            (milkode:jump input)
-          (milkode:grep input))))))
+            (milkode:jump-directpath input)
+          (message "Not direct path."))))))
+
+;;;###autoload
+(defun milkode:display-history ()
+  (interactive)
+  (with-current-buffer (get-buffer-create "*milkode*")
+    (delete-region (point-min) (point-max))
+    (insert (mapconcat #'identity milkode:history "\n"))
+    (pop-to-buffer "*milkode*")))
 
 ;;; Private:
 
-(defun milkode:jump (path)
+(defun milkode:jump-directpath (path)
   (with-temp-buffer
-      (call-process gmilk-command nil t nil path)
-      (goto-char (point-min))
-      (milkode:goto-line (thing-at-point 'filename))
-      ))
+    (message (format "Jump to %s ..." path))
+    (call-process gmilk-command nil t nil path)
+    (goto-char (point-min))
+    (milkode:goto-line (thing-at-point 'filename))
+    ))
 
 (defun milkode:grep (path)
   (grep (concat gmilk-command " " path)))
 
 (defun milkode:is-directpath (str)
-  (string-match "^/.*:[0-9]+" str))
+  (unless (null str)
+    (string-match "^/.*:[0-9]+" str)))
 
 (defun milkode:is-windows-abs (str)
   (string-match "^[a-zA-Z]:" str))
