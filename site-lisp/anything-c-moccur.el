@@ -24,6 +24,48 @@
 ;;; Commentary:
 ;; Tested on Emacs 22
 
+;;; Commands:
+;;
+;; Below are complete command list:
+;;
+;;  `anything-c-moccur-from-isearch'
+;;    Run `anything-c-moccur-occur-by-moccur' with isearch string.
+;;
+;;; Customizable Options:
+;;
+;; Below are customizable option list:
+;;
+;;  `anything-c-moccur-anything-idle-delay'
+;;    anything-c-moccurが提供するコマンドでanythingが起動された際の`anything-idle-delay'の値
+;;    default = nil
+;;  `anything-c-moccur-push-mark-flag'
+;;    non-nilならコマンド起動時に現在のポイントにマークをセットする
+;;    default = nil
+;;  `anything-c-moccur-widen-when-goto-line-flag'
+;;    non-nilなら必要に応じてナローイングを解除する
+;;    default = nil
+;;  `anything-c-moccur-show-all-when-goto-line-flag'
+;;    non-nilなら必要に応じてoutlineの折畳み表示を解除する
+;;    default = nil
+;;  `anything-c-moccur-higligt-info-line-flag'
+;;    non-nilならdmoccur, dired-do-moccurの候補を表示する際にバッファ名などの情報をハイライト表示する
+;;    default = nil
+;;  `anything-c-moccur-enable-auto-look-flag'
+;;    non-nilなら選択中の候補を他のバッファにリアルタイムに表示する
+;;    default = nil
+;;  `anything-c-moccur-enable-initial-pattern'
+;;    non-nilなら`anything-c-moccur-occur-by-moccur'を起動する際に、ポイントの位置の単語をpatternの初期値として起動する。
+;;    default = nil
+;;  `anything-c-moccur-use-moccur-anything-map-flag'
+;;    non-nilならanything-c-moccurのデフォルトのキーバインドを使用する
+;;    default = t
+;;  `anything-c-moccur-recenter-count'
+;;    これは選択した候補の位置にポイントを移動した後に呼ばれる 関数`recenter'に引数として渡される値である
+;;    default = 10
+;;  `anything-c-moccur-preselect-current-line'
+;;    *Preselect current line in *anything moccur* buffer.
+;;    default = t
+
 ;; sample config
 ;; (require 'anything-c-moccur)
 ;; (global-set-key (kbd "M-o") 'anything-c-moccur-occur-by-moccur)
@@ -99,6 +141,10 @@ nilなら使用しない"
                  (boolean))
   :group 'anything-c-moccur)
 
+(defcustom anything-c-moccur-preselect-current-line t
+  "*Preselect current line in *anything moccur* buffer."
+  :type 'boolean  
+  :group 'anything-c-moccur)
 
 ;;; variables
 (defvar anything-c-moccur-version 0.33)
@@ -235,6 +281,13 @@ nilなら使用しない"
     (unless (zerop (buffer-size (get-buffer (anything-buffer-get))))
       (anything-execute-persistent-action))))
 
+(defun anything-c-moccur-preselect-current-line-maybe ()
+  (and anything-c-moccur-preselect-current-line
+       (anything-preselect (format "^ *%d "
+                                   (with-current-buffer anything-current-buffer
+                                     (line-number-at-pos))))))
+
+
 (defvar anything-c-moccur-last-buffer nil)
 (defmacro anything-c-moccur-with-anything-env (sources &rest body)
   (declare (indent 1))
@@ -245,11 +298,13 @@ nilなら使用しない"
                                ((integerp anything-c-moccur-anything-idle-delay)
                                 anything-c-moccur-anything-idle-delay)
                                (t anything-idle-delay))))
-     (add-hook  'anything-c-moccur-anything-after-update-hook 'anything-c-moccur-anything-try-execute-persistent-action)
+     (add-hook 'anything-update-hook 'anything-c-moccur-preselect-current-line-maybe)
+     (add-hook 'anything-c-moccur-anything-after-update-hook 'anything-c-moccur-anything-try-execute-persistent-action)
      (unwind-protect
          (progn
            ,@body)
        (remove-hook 'anything-c-moccur-anything-after-update-hook 'anything-c-moccur-anything-try-execute-persistent-action)
+       (remove-hook 'anything-update-hook 'anything-c-moccur-preselect-current-line-maybe)
        (setq anything-c-moccur-last-buffer anything-current-buffer))))
 
 
@@ -387,31 +442,27 @@ nilなら使用しない"
     (delayed)
     (volatile)))
 
+(defun anything-c-moccur-occur-by-moccur-base (initial-pattern)
+  (anything-c-moccur-with-anything-env (list anything-c-source-occur-by-moccur)
+    (and anything-c-moccur-push-mark-flag (push-mark))
+    (anything nil initial-pattern)))
+
 (defun anything-c-moccur-occur-by-moccur (&optional prefix)
   (interactive "P")
   (if prefix
       (anything-c-moccur-resume)
-    (anything-c-moccur-with-anything-env (list anything-c-source-occur-by-moccur)
-      (let* ((initial-pattern (if anything-c-moccur-enable-initial-pattern
-                                  (regexp-quote (or (thing-at-point 'symbol) ""))
-                                "")))
-        (when anything-c-moccur-push-mark-flag
-          (push-mark))
-        (anything nil initial-pattern)))))
+    (anything-c-moccur-occur-by-moccur-base
+     (if anything-c-moccur-enable-initial-pattern
+         (regexp-quote (or (thing-at-point 'symbol) ""))
+       ""))))
 
 (defun anything-c-moccur-occur-by-moccur-only-function ()
   (interactive)
-  (anything-c-moccur-with-anything-env (list anything-c-source-occur-by-moccur)
-    (when anything-c-moccur-push-mark-flag
-      (push-mark))
-    (anything nil "! ")))
+  (anything-c-moccur-occur-by-moccur-base "! "))
 
 (defun anything-c-moccur-occur-by-moccur-only-comment ()
   (interactive)
-  (anything-c-moccur-with-anything-env (list anything-c-source-occur-by-moccur)
-    (when anything-c-moccur-push-mark-flag
-      (push-mark))
-    (anything nil ";;; ")))
+  (anything-c-moccur-occur-by-moccur-base ";;; "))
 
 (defun anything-c-moccur-query-replace-regexp ()
   (interactive)
@@ -423,6 +474,33 @@ nilなら使用しない"
                                         (perform-replace input-re to-string t t nil nil nil (point-min) (point-max))
                                       (goto-char cur-point)))))
     (anything-exit-minibuffer)))
+
+;; e.x, (global-set-key (kbd "C-c f") (anything-c-moccur-define-occur-command "defun "))
+;; rubikitch: This is replaced by headline plug-in in anything-config.el.
+(defun anything-c-moccur-define-occur-command (initial)
+  (lexical-let ((initial initial))
+    (lambda () (interactive) (anything 'anything-c-source-occur-by-moccur initial))))
+
+
+;;; moccur buffers
+(defvar anything-c-source-moccur-buffer-list
+  '((name . "Moccur To Buffers")
+    (candidates . (lambda ()
+                    (anything-c-moccur-moccur-search anything-pattern nil (buffer-list))
+                    (anything-c-moccur-dmoccur-scraper)))
+    (action . (("Goto line" . anything-c-moccur-dmoccur-goto-line)))
+    (persistent-action . anything-c-moccur-dmoccur-persistent-action)
+    (match . (identity))
+    (requires-pattern . 5)
+    (init . anything-c-moccur-initialize)
+    (cleanup . anything-c-moccur-clean-up)
+    (delayed)
+    (volatile)))
+
+(defun anything-c-moccur-buffer-list ()
+  (interactive)
+  (anything-c-moccur-with-anything-env (list anything-c-source-moccur-buffer-list)
+    (anything)))
 
 ;;; dmoccur
 (defvar anything-c-moccur-dmoccur-buffers nil)
@@ -554,6 +632,11 @@ nilなら使用しない"
     (anything-c-moccur-with-anything-env (list anything-c-source-dired-do-moccur)
       (anything))))
 
+(defun anything-c-moccur-isearch-get-regexp ()
+  (if isearch-regexp
+      isearch-string
+    (regexp-quote isearch-string)))
+
 ;;; Commands
 
 (defun anything-c-moccur-last-sources-is-moccur-p ()
@@ -587,6 +670,13 @@ nilなら使用しない"
       (save-restriction
         (narrow-to-region (point-min) (point-at-eol))
         (anything-c-moccur-occur-by-moccur)))))
+
+(defun anything-c-moccur-from-isearch ()
+  "Run `anything-c-moccur-occur-by-moccur' with isearch string."
+  (interactive)
+  (isearch-exit)
+  (anything-c-moccur-occur-by-moccur-base (anything-c-moccur-isearch-get-regexp)))
+;; (define-key isearch-mode-map "\M-o" 'anything-c-moccur-from-isearch)
 
 ;;; Commands for `anything-c-moccur-anything-map'
 (defun anything-c-moccur-next-line ()

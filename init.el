@@ -750,9 +750,10 @@
 (anything-complete-shell-history-setup-key (kbd "M-r")) ; C-r だと shell-mode の時に後方検索が出来なくなる
 
 ;; C-x a をanytingのプレフィックスに置き換える、というのは迷わないでよさそう
-(global-set-key [(control x) (a) (a)] 'anything-apropos) 
-(global-set-key [(control x) (a) (g)] 'anything-google-suggest)
-(global-set-key [(control x) (a) (y)] 'anything-show-kill-ring)
+(global-set-key (kbd "C-x a a") 'anything-apropos)
+(global-set-key (kbd "C-x a c") 'anything-colors)
+(global-set-key (kbd "C-x a g") 'anything-google-suggest)
+(global-set-key (kbd "C-x a y") 'anything-show-kill-ring)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;anything-git-project
@@ -1447,6 +1448,51 @@
 ;; For popwin
 (push '("*anything milkode*"       :height 20) popwin:special-display-config) 
 (push '("*anything milkode files*" :height 20) popwin:special-display-config)
+
+;;--------------------------------------------------------------------------
+;; anything-c-moccur
+;;--------------------------------------------------------------------------
+(require 'anything-c-moccur)
+(define-key isearch-mode-map (kbd "M-o")   'anything-c-moccur-from-isearch)
+(define-key isearch-mode-map (kbd "C-M-o") 'isearch-occur)
+(push '("*anything moccur*"     :height 20) popwin:special-display-config) 
+
+;;--------------------------------------------------------------------------
+;; anything-patch
+;;--------------------------------------------------------------------------
+
+;; anything-c-source-ffap-line が正しく動かない問題を修正
+(defun anything-c-shorten-home-path (files)
+  "Replaces /home/user with ~."
+  (let ((home (replace-regexp-in-string "\\\\" "/" ; stupid Windows...
+                                        (getenv "HOME"))))
+    (anything-transform-mapcar
+     (lambda (file)
+       (if (and (stringp file) (string-match home file))
+           (replace-match "~" nil nil file)  ; 修正箇所
+         file))
+     files)))
+
+;; pop-tag-mark(M-*) でジャンプ先から戻れるように
+(defun anything-c-ffap-line-candidates ()
+  (with-anything-current-buffer
+    (anything-attrset 'ffap-line-location (anything-c-ffap-file-line-at-point)))
+  (anything-aif (anything-attr 'ffap-line-location)
+    (destructuring-bind (file . line) it
+      (with-anything-current-buffer (ring-insert find-tag-marker-ring (point-marker))) ; find-tag-marker-ringにマークを挿入
+      ;; (with-anything-current-buffer (ring-insert global-mark-ring (point-marker))) ; find-tag-marker-ringにマークを挿入
+      ;; (with-anything-current-buffer (set-mark-command)) ; find-tag-marker-ringにマークを挿入
+      (list (cons (format "%s (line %d)" file line) file)))))
+
+;;--------------------------------------------------------------------------
+;; jump (jump-dls.el)
+;;--------------------------------------------------------------------------
+(require 'jump)
+(add-hook
+ 'emacs-lisp-mode-hook
+ '(lambda ()
+    (define-key emacs-lisp-mode-map (kbd "M-j") 'jump-symbol-at-point)
+    (define-key emacs-lisp-mode-map (kbd "M-*") 'jump-back)))
 
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
