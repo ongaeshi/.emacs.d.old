@@ -479,7 +479,8 @@
 (global-set-key '[?\C-.] 'ff-find-other-file)
 
 ; バッファを開き直す
-(global-set-key "\C-cb" 'revert-buffer)
+;; (global-set-key "\C-cb" 'revert-buffer)
+(global-set-key "\C-cr" 'revert-buffer)
 
 ; 直前に実行したシェルコマンドを実行
 (defun shell-command-prev ()
@@ -1500,6 +1501,35 @@
 (require 'auto-complete)
 (require 'auto-complete-config)
 (global-auto-complete-mode t)
+
+;;--------------------------------------------------------------------------
+;; jump-to-line
+;;--------------------------------------------------------------------------
+(require 'jump-to-line)
+(global-set-key (kbd "C-c C-j") 'jump-to-line) ; Jump
+(global-set-key (kbd "C-c b")   'jtl-back)
+
+;; ;; unset c-mode's C-c C-b (c-submit-bug-report)
+;; (add-hook
+;;  'c-mode-common-hook
+;;  '(lambda ()
+;;     (local-unset-key (kbd "C-c C-b"))))
+
+;;--------------------------------------------------------------------------
+;; ffap (rubygems)
+;;--------------------------------------------------------------------------
+(defun ffap-ruby-mode (name)
+  (shell-command-to-string
+   (format "ruby -e 'require %%[rubygems];require %%[devel/which];require %%[%s];
+print (which_library (%%[%s]))'" name name)))
+
+(defun find-ruby-lib (name)
+  (interactive "sRuby library name: ")
+  (find-file (ffap-ruby-mode name)))
+
+;ffap
+(require 'ffap)
+(add-to-list 'ffap-alist '(ruby-mode . ffap-ruby-mode))
 
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
