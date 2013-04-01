@@ -1017,7 +1017,7 @@
 ;;--------------------------------------------------------------------------
 (require 'popwin)
 (setq display-buffer-function 'popwin:display-buffer)
-(setq special-display-function 'popwin:special-display-popup-window)
+;; (setq special-display-function 'popwin:special-display-popup-window)
 
 (push '("*Shell Command Output*" :height 20) popwin:special-display-config)
 ;(push '("*Shell Command Output*" :height 20 :position top) popwin:special-display-config)
@@ -1030,12 +1030,14 @@
 (push '("*anything google*"      :height 20) popwin:special-display-config)
 (push '("*anything git project*" :height 20) popwin:special-display-config)
 
-(push '("*scratch*") popwin:special-display-config)
-(push '("svnlog.txt") popwin:special-display-config)
-(push '("journal.txt" :regexp t) popwin:special-display-config)
-;(push '("*grep*") popwin:special-display-config)
-(push '("*sdic*") popwin:special-display-config) ; 何故か動かない
-(push '(dired-mode :position top) popwin:special-display-config) ; dired-jump-other-window (C-x 4 C-j)
+(push '("*grep*" :height 20 :noselect t) popwin:special-display-config)
+
+(push '("*scratch*")              popwin:special-display-config)
+(push '("svnlog.txt")             popwin:special-display-config)
+(push '("journal.txt" :regexp t)  popwin:special-display-config)
+
+;; (push '("*sdic*") popwin:special-display-config) ; 何故か動かない
+;; (push '(dired-mode :position top) popwin:special-display-config) ; dired-jump-other-window (C-x 4 C-j)
 
 ;;--------------------------------------------------------------------------
 ;;JavaScript
@@ -1311,7 +1313,7 @@
   (defun ascmd:notify (msg) (deferred:process-shell (format "growlnotify -m %s -t emacs" msg))))
 
 ;; エラー時のポップアップを見やすくする。 ※ (require 'popwin) が必要です。
-(push '("*Auto Shell Command*" :height 20) popwin:special-display-config)
+(push '("*Auto Shell Command*" :height 20 :noselect t) popwin:special-display-config)
 
 ;; コマンドリストの設定 (下が優先高)
 (ascmd:add '("Documents/milkode/test/.*\.rb$" "ruby -I../lib -I../test ./rake_test_loader.rb $FILE"))
@@ -1319,6 +1321,8 @@
 (ascmd:add '("Documents/milkode/lib/milkode/cdstk/package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)"))
 
 (ascmd:add '("Documents/qiita_mail/test/.*\.rb" "ruby -I../lib -I../test $FILE"))
+(ascmd:add '("Documents/ltsvr/test/.*\.rb" "ruby -I../lib -I../test $FILE"))
+(ascmd:add '("Documents/mygithub/test/.*\.rb" "ruby -I../lib -I../test $FILE"))
 
 (ascmd:add '("Resources/" "wget -O /dev/null http://0.0.0.0:9090/run"))
 (ascmd:add '("junk/.*\.rb" "ruby $FILE"))
@@ -1371,6 +1375,7 @@
 ;;--------------------------------------------------------------------------
 ;;milkode
 ;;--------------------------------------------------------------------------
+(require 'moz)
 (require 'milkode)
 ;; (global-set-key (kbd "M-g") 'milkode:search)
 
@@ -1396,23 +1401,36 @@
 ;;--------------------------------------------------------------------------
 ;; mark-multiple
 ;;--------------------------------------------------------------------------
-(require 'inline-string-rectangle)
-(global-set-key (kbd "C-x r t") 'inline-string-rectangle)
+;; (require 'inline-string-rectangle)
+;; (global-set-key (kbd "C-x r t") 'inline-string-rectangle)
 
-(require 'mark-more-like-this)
-(global-set-key (kbd "C-<") 'mark-previous-like-this)
-(global-set-key (kbd "C->") 'mark-next-like-this)
-;; (global-set-key (kbd "C-M-m") 'mark-more-like-this) ; like the other two, but takes an argument (negative is previous)
-(global-set-key (kbd "C-*") 'mark-all-like-this)
+;; (require 'mark-more-like-this)
+;; (global-set-key (kbd "C-<") 'mark-previous-like-this)
+;; (global-set-key (kbd "C->") 'mark-next-like-this)
+;; ;; (global-set-key (kbd "C-M-m") 'mark-more-like-this) ; like the other two, but takes an argument (negative is previous)
+;; (global-set-key (kbd "C-*") 'mark-all-like-this)
 
-;; (add-hook 'sgml-mode-hook
+;; ;; (add-hook 'sgml-mode-hook
+;; ;;           (lambda ()
+;; ;;             (require 'rename-sgml-tag)
+;; ;;             (define-key sgml-mode-map (kbd "C-c C-r") 'rename-sgml-tag)))
+;; (add-hook 'html-mode-hook
 ;;           (lambda ()
 ;;             (require 'rename-sgml-tag)
-;;             (define-key sgml-mode-map (kbd "C-c C-r") 'rename-sgml-tag)))
-(add-hook 'html-mode-hook
-          (lambda ()
-            (require 'rename-sgml-tag)
-            (define-key html-mode-map (kbd "C-c C-r") 'rename-sgml-tag)))
+;;             (define-key html-mode-map (kbd "C-c C-r") 'rename-sgml-tag)))
+
+;;--------------------------------------------------------------------------
+;; multiple-cursors
+;;--------------------------------------------------------------------------
+(require 'multiple-cursors)
+
+(global-set-key (kbd "C-t") 'mc/mark-next-like-this)
+
+;; (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+
+;; (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+;; (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+;; (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 
 ;;--------------------------------------------------------------------------
 ;; winden-window
@@ -1443,10 +1461,10 @@
 
 ;; Shortcut setting
 (global-set-key (kbd "M-g")     'anything-milkode)                                
-(global-set-key (kbd "M-j")     'milkode:jump)                                ; 元のキーは indent-new-comment-line
 (global-set-key (kbd "C-x a f") 'anything-milkode-files)
 
 ;; For popwin
+(push '("*milkode*"                :height 20) popwin:special-display-config)
 (push '("*anything milkode*"       :height 20) popwin:special-display-config) 
 (push '("*anything milkode files*" :height 20) popwin:special-display-config)
 
@@ -1531,9 +1549,43 @@ print (which_library (%%[%s]))'" name name)))
 (require 'ffap)
 (add-to-list 'ffap-alist '(ruby-mode . ffap-ruby-mode))
 
+
+;;--------------------------------------------------------------------------
+;; all-ext
+;;--------------------------------------------------------------------------
+(require 'all-ext)
+
+(eval-after-load "anything-c-moccur"
+  '(progn
+     (defun all-from-anything-moccur ()
+       "Call `all' from `anything' content."
+       (interactive)
+       (anything-run-after-quit
+        'all-from-anything-occur-internal "anything-moccur"
+        anything-c-moccur-buffer anything-current-buffer))
+     (define-key anything-c-moccur-anything-map (kbd "C-c C-a")
+       'all-from-anything-moccur)))
+
+;;--------------------------------------------------------------------------
+;; moz.el
+;;--------------------------------------------------------------------------
+;; (load "~/Dropbox/tmp/milkode-firefox.el")
+
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ;;--------------------------------------------------------------------------
 ;;プロジェクト毎の専用設定
 ;;-------------------------------------------------------------------------
 ;(load-file "project.el")
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(safe-local-variable-values (quote ((encoding . utf-8)))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
