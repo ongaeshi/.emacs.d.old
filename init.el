@@ -2,13 +2,14 @@
 ;; .emacs.d/init.el
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; $BJ8;z%3!<%I$O(BJIS$B$K$7$F$*$+$J$$$HF|K\8l$,$&$^$/I=<($5$l$J$$(B
+;; 文字コードはJISにしておかないと日本語がうまく表示されない
+;; 2013/04/02 最近のEmacsだとUTF-8でもOK?
 
-;; $B%m!<%I%Q%9$r@_Dj(B
+;; ロードパスを設定
 (add-to-list 'load-path "~/.emacs.d/site-lisp")
 (add-to-list 'load-path "~/.emacs.d/auto-install")
 
-;;$B4D6-$K$h$k@Z$jJ,$1(B
+;;環境による切り分け
 (require 'platform-p)
 
 ;;--------------------------------------------------------------------------
@@ -22,53 +23,53 @@
 (require 'melpa)
 
 ;;--------------------------------------------------------------------------
-;; $B<+:n4X?t(B
+;; 自作関数
 ;;-------------------------------------------------------------------------
 (require 'my-functions)
 
 ;;--------------------------------------------------------------------------
-;; $B@_Dj(B
+;; 設定
 ;;-------------------------------------------------------------------------
 
-;; $B%3%^%s%I%a%b(B
-;; M-l runs the command downcase-word   ;; $BC18l$r>.J8;z$KJQ49(B
-;; M-k runs the command upcase-word     ;; $BC18l$rBgJ8;z$KJQ49(B($B%+%9%?%^%$%:$7$F$^$9!"85$N%3%^%s%I$O(B kill-sentence) 
-;; M-c runs the command capitalize-word ;; $B8eB3$NC18l$N#1J8;zL\$@$1$rBgJ8;z$K$9$k!#(B
-;; M-i runs the command tab-to-tab-stop ;; $B%?%V$rA^F~(B
+;; コマンドメモ
+;; M-l runs the command downcase-word   ;; 単語を小文字に変換
+;; M-k runs the command upcase-word     ;; 単語を大文字に変換(カスタマイズしてます、元のコマンドは kill-sentence) 
+;; M-c runs the command capitalize-word ;; 後続の単語の１文字目だけを大文字にする。
+;; M-i runs the command tab-to-tab-stop ;; タブを挿入
 
 (global-set-key "\M-k" 'upcase-word)
 
 (ediff-toggle-multiframe)
 ;(setq initial-frame-alist '((top . 0) (left . 80) (width . 800) (height . 40)))
 
-; $B%;!<%V8e$K%U%!%$%k=*C<$K2~9T$rDI2C(B
+; セーブ後にファイル終端に改行を追加
 (setq require-final-newline nil)
 
-; $B2<$r2!$7$F$b2~9T$r$$$l$J$$$?$a$NJ}K!(B
+; 下を押しても改行をいれないための方法
 (setq next-line-add-newlines nil)
 
-; $B%P%C%/%"%C%W%U%!%$%k$r:n$i$J$$(B (init.el~ $B$_$?$$$J$d$D(B)
+; バックアップファイルを作らない (init.el~ みたいなやつ)
 (setq make-backup-files nil)
 
-; $B2hLL$d!"%U%l!<%`$NI}$KK~$?$J$$%&%#%s%I%&$G$b!"%F%-%9%H$r@^$jJV$7$FI=<($9$k(B
+; 画面や、フレームの幅に満たないウィンドウでも、テキストを折り返して表示する
 ;(setq truncate-partial-width-windows nil)
 (setq truncate-partial-width-windows t)
 
-;;; $B%D!<%k%P!<$rI=<($7$J$$(B
+;;; ツールバーを表示しない
 (tool-bar-mode 0)
 
-;; set abbrev-mode $BCV49%b!<%I$N@_Dj(B
+;; set abbrev-mode 置換モードの設定
 (setq-default abbrev-mode t)
 (quietly-read-abbrev-file)
 
-;; $B9THV9f$NI=<((B
+;; 行番号の表示
 (setq line-number-mode t)
 (setq column-number-mode t)
 
-;; $B%5!<%A(B/$B%j%W%l%$%9$J$I$GBgJ8;z$H>.J8;z$r6hJL$7$J$$(B
+;; サーチ/リプレイスなどで大文字と小文字を区別しない
 (setq-default case-fold-search t)
 
-;; $BJT=8(B mode $B$NDI2C(B (prolog mode $B$O>C$($k(B)
+;; 編集 mode の追加 (prolog mode は消える)
 (setq auto-mode-alist
       (append '(("\\.c$"           . c-mode)	
 		("\\.pl$"          . cperl-mode)
@@ -78,33 +79,33 @@
 		("\\.dat$\\|.mch$" . hexl-mode))
 	      auto-mode-alist))
 
-;; $B%_%K%P%C%U%!$GA0$KBG$A9~$s$@J8;zNs$r:FMxMQ$7$?$$(B (C-x ESC) ($BJ8;zNs$N8!:w$K(BC-p,C-n$B$r3d$jEv$F$k(B) 
+;; ミニバッファで前に打ち込んだ文字列を再利用したい (C-x ESC) (文字列の検索にC-p,C-nを割り当てる) 
 ;(define-key repeat-complex-command-map "\C-p"  'previous-complex-command)
 ;(define-key repeat-complex-command-map "\C-n"  'next-complex-command)
 
-;; $BBP1~$9$k3g8L$r!"6/D4I=<($9$k(B
+;; 対応する括弧を、強調表示する
 (show-paren-mode t)
 
-;; $B5/F0;~$N%+%l%s%H%G%#%l%/%H%j$N@_Dj(B
+;; 起動時のカレントディレクトリの設定
 (cd "~")
 
-;; $BF0E*Jd40$N$H$-!$%Q%?!<%s$r$=$N$^$^E83+$9$k(B default$B$G$O!$(B case-replace$B$NCM$,F~$C$F$$$k(B
+;; 動的補完のとき，パターンをそのまま展開する defaultでは， case-replaceの値が入っている
 (setq dabbrev-case-replace nil)
 
 ;; ffap
 (ffap-bindings)
 
-;; $B%J%m%$%s%0$rM-8z$K(B
+;; ナロイングを有効に
 (put 'narrow-to-region 'disabled nil)
 
 ;; transient-mark-mode
 (setq transient-mark-mode t)
 
 ;;--------------------------------------------------------------------------
-;; Emacs$B$KI,MW$J%Q%9$rDL$9(B 
+;; Emacsに必要なパスを通す 
 ;;-------------------------------------------------------------------------
 ;; http://sakito.jp/emacs/emacsshell.html#path
-;; $B$h$j2<$K5-=R$7$?J*$,(B PATH $B$N@hF,$KDI2C$5$l$^$9(B
+;; より下に記述した物が PATH の先頭に追加されます
 (when platform-darwin-p
   (dolist (dir (list
                 "/usr/X11/bin"
@@ -117,12 +118,12 @@
                 "/Developer/Tools"
                 "/usr/local/sbin"
                 "/opt/local/sbin"
-                "/opt/local/bin" ;; $B$3$l$,(B/usr/bin$B$h$j$b2<$K=q$$$F$"$l$P$h$$(B
+                "/opt/local/bin" ;; これが/usr/binよりも下に書いてあればよい
                 "/usr/local/bin"
                 (expand-file-name "~/bin")
                 (expand-file-name "~/bin/gnuplot")
                 ))
-    ;; PATH $B$H(B exec-path $B$KF1$8J*$rDI2C$7$^$9(B
+    ;; PATH と exec-path に同じ物を追加します
     (when ;; (and 
         (file-exists-p dir) ;; (not (member dir exec-path)))
       (setenv "PATH" (concat dir ":" (getenv "PATH")))
@@ -132,27 +133,27 @@
 ;;--------------------------------------------------------------------------
 ;; shell-mode
 ;;-------------------------------------------------------------------------
-; .bashrc$B$G(Bcd$B$d(Bpushd,popd$B$K%(%$%j%"%9$rE=$k>l9g$O!"(BEmacs$BB&$K$bEA$($F$*$/I,MW$,$"$k(B
+; .bashrcでcdやpushd,popdにエイリアスを貼る場合は、Emacs側にも伝えておく必要がある
 ; http://www.geocities.co.jp/SiliconValley-Bay/9285/EMACS-JA/emacs_412.html
 ;(setq shell-pushd-regexp "\\(cd\\|pushd\\)")
 ;(setq shell-popd-regexp "\\(bd\\|popd\\)")
 
-;; shell-mode $B$G%(%9%1!<%W$re:No$KI=<((B
+;; shell-mode でエスケープを綺麗に表示
 (when platform-darwin-p
   (autoload 'ansi-color-for-comint-mode-on "ansi-color"
     "Set `ansi-color-for-comint-mode' to t." t)
   (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on))
 
 ;;--------------------------------------------------------------------------
-;; $B%-!<%P%$%s%I$N@_Dj(B
+;; キーバインドの設定
 ;;-------------------------------------------------------------------------
-; $B%-!<%P%$%s%I(B
+; キーバインド
 (global-unset-key "\C-h")
 (global-set-key "\C-h" 'delete-backward-char)
 (global-set-key "\M-h" 'help-for-help)
 
 
-; grep$B$r%-!<%P%$%s%I(B
+; grepをキーバインド
 (global-set-key "\M-g" 'grep)
 (setq grep-command "gmilk ")
 (setq grep-use-null-device nil)
@@ -161,41 +162,41 @@
 (global-set-key "\C-x\C-g" 'grep-find)
 (setq grep-find-command "gren ")
 
-;$B85$N%-!<%P%$%s%I$O$J$$(B
+;元のキーバインドはない
 (global-set-key "\C-cg" 'goto-line)
 
-;$BCV49(B
+;置換
 (global-set-key "\C-q" 'query-replace)
 ;; (global-set-key "\M-q" 'query-replace-regexp)
 (global-set-key "\M-q" 'replace-string)
 
-;$B:G8e$N%-!<%\!<%I%^%/%m$r8F$S=P$9(B
+;最後のキーボードマクロを呼び出す
 (global-set-key "\C-t" 'call-last-kbd-macro)
 
-;$B$J$<$+!"(BM-,$B$OH?1~$7$J$$!&!&!&(B
+;なぜか、M-,は反応しない・・・
 (global-set-key "\M-'" 'tags-loop-continue)
 
-;;TAGS$B%U%!%$%kFb$N4X?t$d!"JQ?tL>$rJd40$9$k(B($B$J$<$+(B\M-,$B$OH?1~$7$J$$(B)
-;;$B85$N%-!<$O(Bback-to-indentation $B$3$N%3%^%s%I$O7k9=;H$($k$+$b(B...
+;;TAGSファイル内の関数や、変数名を補完する(なぜか\M-,は反応しない)
+;;元のキーはback-to-indentation このコマンドは結構使えるかも...
 (global-set-key "\M-m" 'complete-symbol)
 
-;grep$B8!:wEy$G<!$N8!:w7k2L$X0\F0(B
+;grep検索等で次の検索結果へ移動
 (global-set-key "\M-o" 'next-error)
 
-;$BB>$N%&%#%s%I%&$K0\F0(B
+;他のウィンドウに移動
 (global-set-key (kbd "C-;") 'other-window)
 
-; Shift + $BLp0u%-!<$G%&%#%s%I%&4V$r0\F0(B
+; Shift + 矢印キーでウィンドウ間を移動
 (windmove-default-keybindings)
 
-;$B%X%C%@$d%=!<%9%U%!%$%k$r3+$/(B
+;ヘッダやソースファイルを開く
 (global-set-key '[?\C-.] 'ff-find-other-file)
 
-; $B%P%C%U%!$r3+$-D>$9(B
+; バッファを開き直す
 ;; (global-set-key "\C-cb" 'revert-buffer)
 (global-set-key "\C-cr" 'revert-buffer)
 
-; $BD>A0$K<B9T$7$?%7%'%k%3%^%s%I$r<B9T(B
+; 直前に実行したシェルコマンドを実行
 (defun shell-command-prev ()
   (interactive)
   (shell-command (car shell-command-history) nil nil))
@@ -205,13 +206,13 @@
 ;;--------------------------------------------------------------------------
 ;; Info-mode
 ;;-------------------------------------------------------------------------
-;; $B%-!<%P%$%s%I$NJQ99(B
+;; キーバインドの変更
 (add-hook 'Info-mode-hook
-	  '(lambda () (define-key Info-mode-map [M-n] 'scroll-next-10-line)) ;$B85$N%-!<$O!"(Bclone-buffer
+	  '(lambda () (define-key Info-mode-map [M-n] 'scroll-next-10-line)) ;元のキーは、clone-buffer
 	  )
 
 ;;--------------------------------------------------------------------------
-;; $B%&%#%s%I%&%5%$%:(B
+;; ウィンドウサイズ
 ;;-------------------------------------------------------------------------
 (setq default-frame-alist
       (append (list
@@ -227,46 +228,46 @@
 ;;-------------------------------------------------------------------------
 (require 'color-setting)
 
-; $B9T4V$r3+$1$kNL!"$3$l$rD4@0$9$k$3$H$G$+$J$j8+$(J}$,JQ$o$k(B
+; 行間を開ける量、これを調整することでかなり見え方が変わる
 (setq-default line-spacing 1)
 
 ;;--------------------------------------------------------------------------
 ;; C, C++
 ;;-------------------------------------------------------------------------
-;; $B%R%s%H(B
+;; ヒント
 (defface hint-face '((t (:foreground "#c0c0c0"))) nil)
 
-;; $B%R%s%H$NI=<((B($B%3%T%ZMQ(B:???)
+;; ヒントの表示(コピペ用:???)
  (defun display-hint ()
   (font-lock-add-keywords nil '(
     ("\n" 0 'hint-face prepend)
     ("\t" 0 'hint-face prepend)
-    ("$B!!(B" 0 'hint-face prepend)
+    ("　" 0 'hint-face prepend)
   ))
   (setq buffer-display-table (make-display-table))
   (aset buffer-display-table ?\n (vconcat "?\n"))
   (aset buffer-display-table ?\t (vconcat "^\t"))
-  (aset buffer-display-table ?$B!!(B (vconcat "$B""(B"))
+  (aset buffer-display-table ?　 (vconcat "□"))
 )
 
-;; $B%^%8%C%/%J%s%P!<(B
+;; マジックナンバー
 (defface danger-magic-number-face '((t (:foreground "#e00000"))) nil)
 
-;; $B%^%8%C%/%J%s%P!<$NI=<((B
+;; マジックナンバーの表示
 (defun font-lock-add-magic-number ()
   (font-lock-add-keywords nil '(
     ("[^]A-Za-z0-9_\)]\\([-\\+]?0x[0-9a-fA-F]+\\|[-\\+]?[0-9.]+[fF]?\\)" 1 'danger-magic-number-face append)
   ))
 )
 
-;;; C++$B%b!<%I$G$O%^%8%C%/%J%s%P!<$H%R%s%H$rI=<((B
+;;; C++モードではマジックナンバーとヒントを表示
 (add-hook 'c++-mode-hook
 	  '(lambda ()
              (display-hint)
              (font-lock-add-magic-number)
 	     ))
 
-;; c++-mode$B%-!<%P%$%s%G%#%s%0(B
+;; c++-modeキーバインディング
 (add-hook 'c++-mode-hook
 	  (function (lambda () (setq comment-column 40))))
 
@@ -312,23 +313,23 @@
 ;; sdic
 ;;-------------------------------------------------------------------------
 (setq load-path (cons "~/.emacs.d/site-lisp/sdic" load-path))
-(autoload 'sdic-describe-word "sdic" "$B1QC18l$N0UL#$rD4$Y$k(B" t nil)
+(autoload 'sdic-describe-word "sdic" "英単語の意味を調べる" t nil)
 (global-set-key "\C-cw" 'sdic-describe-word)
-(autoload 'sdic-describe-word-at-point "sdic" "$B%+!<%=%k$N0LCV$N1QC18l$N0UL#$rD4$Y$k(B" t nil)
+(autoload 'sdic-describe-word-at-point "sdic" "カーソルの位置の英単語の意味を調べる" t nil)
 (global-set-key "\C-cW" 'sdic-describe-word-at-point)
 
-;; $B<-=q%U%!%$%k$NCV$->l=j(B
+;; 辞書ファイルの置き場所
 (setq sdic-eiwa-dictionary-list '((sdicf-client "~/.emacs.d/site-lisp/sdic/gene.sdic")))
 (setq sdic-waei-dictionary-list '((sdicf-client "~/.emacs.d/site-lisp/sdic/jedict.sdic")))
 
 ;;--------------------------------------------------------------------------
-;; $BF10lL>%P%C%U%!$N%Q%9L>I=<((B
+;; 同一名バッファのパス名表示
 ;;-------------------------------------------------------------------------
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
 
 ;;--------------------------------------------------------------------------
-;; recentf$B@_Dj(B $B<+F0%;!<%VIU$-(B
+;; recentf設定 自動セーブ付き
 ;; (install-elisp-from-emacswiki "recentf-ext.el")
 ;;--------------------------------------------------------------------------
 (setq recentf-max-saved-items 5000)
@@ -348,15 +349,15 @@
 ;;-------------------------------------------------------------------------
 (require 'color-moccur)
 
-;; $BJ#?t$N8!:w8l$d!"FCDj$N%U%'%$%9$N$_%^%C%AEy$N5!G=$rM-8z$K$9$k(B
-;; $B>\:Y$O(B http://www.bookshelf.jp/soft/meadow_50.html#SEC751
+;; 複数の検索語や、特定のフェイスのみマッチ等の機能を有効にする
+;; 詳細は http://www.bookshelf.jp/soft/meadow_50.html#SEC751
 (setq moccur-split-word t)
 
-;; migemo$B$,(Brequire$B$G$-$k4D6-$J$i(Bmigemo$B$r;H$&(B
-(when (require 'migemo nil t) ;$BBh;00z?t$,(Bnon-nil$B$@$H(Bload$B$G$-$J$+$C$?>l9g$K%(%i!<$G$O$J$/(Bnil$B$rJV$9(B
+;; migemoがrequireできる環境ならmigemoを使う
+(when (require 'migemo nil t) ;第三引数がnon-nilだとloadできなかった場合にエラーではなくnilを返す
   (setq moccur-use-migemo t))
 
-;; dired$B;~$N(Bmoccur
+;; dired時のmoccur
 (add-hook 'dired-mode-hook
           '(lambda ()
              (local-set-key "O" 'dired-do-moccur)))
@@ -366,7 +367,7 @@
 ;;-------------------------------------------------------------------------
 (require 'anything-startup)
 
-; anything-for-files$B$NFbMF$r%+%9%?%^%$%:!"(Banything-c-source-locate$B$r=|30(B
+; anything-for-filesの内容をカスタマイズ、anything-c-source-locateを除外
 (setq anything-for-files-prefered-list
   '(anything-c-source-ffap-line
     anything-c-source-ffap-guesser
@@ -383,10 +384,10 @@
 ;(global-set-key "\M-q" 'anything-regexp)
 ;(global-set-key (kbd "M-y") 'anything-show-kill-ring)
 
-;; $B>r7oIU$-5/F0(B
-(anything-complete-shell-history-setup-key (kbd "M-r")) ; C-r $B$@$H(B shell-mode $B$N;~$K8eJ}8!:w$,=PMh$J$/$J$k(B
+;; 条件付き起動
+(anything-complete-shell-history-setup-key (kbd "M-r")) ; C-r だと shell-mode の時に後方検索が出来なくなる
 
-;; C-x a $B$r(Banyting$B$N%W%l%U%#%C%/%9$KCV$-49$($k!"$H$$$&$N$OLB$o$J$$$G$h$5$=$&(B
+;; C-x a をanytingのプレフィックスに置き換える、というのは迷わないでよさそう
 (global-set-key (kbd "C-x a a") 'anything-apropos)
 (global-set-key (kbd "C-x a c") 'anything-colors)
 (global-set-key (kbd "C-x a g") 'anything-google-suggest)
@@ -427,53 +428,53 @@
 (global-set-key [(control x) (a) (g)] 'anything-git-project)
 
 ;;--------------------------------------------------------------------------
-;; $B%?%V$N$+$o$j$K%9%Z!<%9$r;HMQ(B
+;; タブのかわりにスペースを使用
 ;;--------------------------------------------------------------------------
 (setq-default indent-tabs-mode nil)
 (setq indent-line-function 'indent-relative-maybe)
 
 ;;--------------------------------------------------------------------------
-;; emacsclient$B%5!<%P!<$N5/F0(B
+;; emacsclientサーバーの起動
 ;;-------------------------------------------------------------------------
 (server-start)
 
 ;;--------------------------------------------------------------------------
 ;;moccur-edit
 ;;
-;; * $B8!:w$9$k(B
-;;   dmoccur $B$d(B moccur $B!$(B moccur-grep $B!$(B moccur-grep-find $B$J$I$G8!:w$7$F7k2L$rI=<($5$;$^$9!%(B
+;; * 検索する
+;;   dmoccur や moccur ， moccur-grep ， moccur-grep-find などで検索して結果を表示させます．
 ;;
-;; * $BJT=8%b!<%I$KF~$k(B
-;;   $B7k2L$,I=<($5$l$?$H$3$m$G!$(Br($B$"$k$$$O(BC-c C-i $B$+(B C-x C-q $B$G$b$$$$(B) $B$H$7$^$9!%$9$k$H!$%P%C%U%!$,JT=8$G$-$k$h$&$K$J$j$^$9!%(B
+;; * 編集モードに入る
+;;   結果が表示されたところで，r(あるいはC-c C-i か C-x C-q でもいい) とします．すると，バッファが編集できるようになります．
 ;;
-;; * $BJT=8$9$k(B
-;;   $B8e$OJT=8$9$k$@$1$G$9!%JT=8$9$k$H!$JT=8$7$?2U=j$K$O?'$,$D$-$^$9!%(B
+;; * 編集する
+;;   後は編集するだけです．編集すると，編集した箇所には色がつきます．
 ;;
-;; * $BJT=8$rE,MQ$9$k(B
-;;   C-x C-s ($B$"$k$$$O(B C-c C-c $B$+(B C-c C-f $B$G$b2DG=(B) $B$H$9$k$H!$?'$,$D$$$F$$$kJQ99$N$_$,E,MQ$5$l$^$9!%(B
+;; * 編集を適用する
+;;   C-x C-s (あるいは C-c C-c か C-c C-f でも可能) とすると，色がついている変更のみが適用されます．
 ;;
-;;   $B%P%C%U%!$NJ]B8$O$7$^$;$s$N$G!$3F%U%!%$%k$r3NG'$7$F$+$iJ]B8$7$F$/$@$5$$!%JQ99$7$?9T$K$O?'$,$D$-$^$9$N$G!$Hf3SE*H/8+$7$d$9$$$H;W$$$^$9!%(B
+;;   バッファの保存はしませんので，各ファイルを確認してから保存してください．変更した行には色がつきますので，比較的発見しやすいと思います．
 ;;
-;; * $B0lIt$NJQ99$N$_E,MQ$7$?$/$J$$(B
-;;   $BE,MQ$7$?$/$J$$ItJ,$r%j!<%8%g%s$GA*Br$7!$(BC-c C-r $B$H$7$^$9!%$=$&$9$k$H!$?'$,>C$($F!$$3$NJQ99$OE,MQ$5$l$J$/$J$j$^$9!%(B
+;; * 一部の変更のみ適用したくない
+;;   適用したくない部分をリージョンで選択し，C-c C-r とします．そうすると，色が消えて，この変更は適用されなくなります．
 ;;
-;; * $B$9$Y$F$NJQ99$rGK4~$9$k(B
-;;   $B$9$Y$F$NJQ99$rE,MQ$7$?$/$J$$;~$K$O!$(BC-x k($B$"$k$$$O(B C-c C-k $B$+(B C-c k $B$+(B C-c C-u $B$G$b2DG=(B) $B$H$7$^$9!%$3$l$G!$$9$Y$F$NJQ99$OL58z$K$J$j$^$9!%(B 
+;; * すべての変更を破棄する
+;;   すべての変更を適用したくない時には，C-x k(あるいは C-c C-k か C-c k か C-c C-u でも可能) とします．これで，すべての変更は無効になります． 
 ;;-------------------------------------------------------------------------
 (require 'moccur-edit)
 
 ;;--------------------------------------------------------------------------
 ;;grep-edit
 ;;
-;; M-x grep$B$G8!:w8e!$(B grep $B$N%P%C%U%!$rJT=8$G$-$^$9!%JT=8$9$k$H!$JT=8$7$?2U=j$N?'$,JQ$o$j$^$9!%(B
-;; $BJT=8$,=*$o$C$?$i!$(BC-c C-e $B$H$9$k$H?'$N$D$$$?JQ99$N$_$,E,MQ$5$l$^$9!%JQ99$NGK4~$O!$(BC-c C-u $B$G$G$-$^$9!%(B
-;; $B$^$?!$E,MQ$7$?$/$J$$JQ99$r%j!<%8%g%s$GA*Br$7!$(B C-c C-r $B$H$9$k$H!$%j!<%8%g%sFb$NJQ99$N$_$rGK4~$G$-$^$9!%(B
+;; M-x grepで検索後， grep のバッファを編集できます．編集すると，編集した箇所の色が変わります．
+;; 編集が終わったら，C-c C-e とすると色のついた変更のみが適用されます．変更の破棄は，C-c C-u でできます．
+;; また，適用したくない変更をリージョンで選択し， C-c C-r とすると，リージョン内の変更のみを破棄できます．
 ;;
-;; $B$3$NJQ99$NE,MQ;~$K$O%P%C%U%!$NJ]B8$O$7$F$$$^$;$s!%(B
-;; $BJ]B8A0$K@5$7$/JQ99$5$l$F$$$k$+3NG'$7$F$+$iJ]B8$7$F$/$@$5$$!%(B
-;; $BJQ992U=j$O?'$rJQ$($F$^$9$N$G!$4JC1$K8+$D$+$k$H;W$$$^$9!%(B
+;; この変更の適用時にはバッファの保存はしていません．
+;; 保存前に正しく変更されているか確認してから保存してください．
+;; 変更箇所は色を変えてますので，簡単に見つかると思います．
 ;;
-;; $B%(%i!<=hM}$J$I$O$[$H$s$I$7$F$$$^$;$s$N$G!$Cm0U$7$F;H$C$F$/$@$5$$!%(B 
+;; エラー処理などはほとんどしていませんので，注意して使ってください． 
 ;;-------------------------------------------------------------------------
 (require 'grep-edit)
 
@@ -526,14 +527,14 @@
 ;; autoinsert
 ;;--------------------------------------------------------------------------
 (auto-insert-mode)
-(setq auto-insert-directory "~/.emacs.d/insert/") ; $B:G8e$N(B / $B$OI,?\(B
+(setq auto-insert-directory "~/.emacs.d/insert/") ; 最後の / は必須
 (define-auto-insert "\\.rb$" "template.rb")
 (define-auto-insert "\\.js$" "template.js")
 (define-auto-insert "blog.\\txt$" "template-blog.txt")
 
 ;;--------------------------------------------------------------------------
-;; $B%_%K%P%C%U%!>e$G8=:_%P%C%U%!L>$rA^F~$9$k(B
-;; shell-command $BEy$N<B9T$KJXMx(B
+;; ミニバッファ上で現在バッファ名を挿入する
+;; shell-command 等の実行に便利
 ;;-------------------------------------------------------------------------
 (defun current-buffer-not-mini ()
   "Return current-buffer if current buffer is not the *mini-buffer*
@@ -596,13 +597,13 @@
 (push '("svnlog.txt")             popwin:special-display-config)
 (push '("journal.txt" :regexp t)  popwin:special-display-config)
 
-;; (push '("*sdic*") popwin:special-display-config) ; $B2?8N$+F0$+$J$$(B
+;; (push '("*sdic*") popwin:special-display-config) ; 何故か動かない
 ;; (push '(dired-mode :position top) popwin:special-display-config) ; dired-jump-other-window (C-x 4 C-j)
 
 ;;--------------------------------------------------------------------------
 ;; JavaScript
 ;;
-;; js2-20090723b.el ($B%@%&%s%m!<%I8e!"(B js2.el $B$K2~L>!"MW%P%$%H%3%s%Q%$%k(B)
+;; js2-20090723b.el (ダウンロード後、 js2.el に改名、要バイトコンパイル)
 ;; http://code.google.com/p/js2-mode/downloads/detail?name=js2-20090723b.el&can=2&q=
 ;;
 ;; espresso.el
@@ -659,7 +660,7 @@
 (add-hook 'js2-mode-hook 'my-js2-mode-hook)
 
 ;;--------------------------------------------------------------------------
-;; $BD>A0$K<B9T$7$?%7%'%k%3%^%s%I$r<B9T(B
+;; 直前に実行したシェルコマンドを実行
 ;;-------------------------------------------------------------------------
 (defun shell-command-prev ()
   (interactive)
@@ -687,28 +688,28 @@
 
 ;;--------------------------------------------------------------------------
 ;; cua-mode
-;; $B6k7ANN0h$KBP$7$F%j%"%k%?%$%`$KJ8;zNs$NA^F~$,=PMh$?$j=PMh$k!#(B
+;; 矩形領域に対してリアルタイムに文字列の挿入が出来たり出来る。
 ;;
-;; cua-mode$B3+;O(B .. $BNN0hA*Br$7$F!"(BC-Enter
+;; cua-mode開始 .. 領域選択して、C-Enter
 ;;-------------------------------------------------------------------------
 (cua-mode t)
-(setq cua-enable-cua-keys nil) ; $B$=$N$^$^$@$H(B C-x $B$,@Z$j<h$j$K$J$C$F$7$^$C$?$j$9$k$N$GL58z2=(B
+(setq cua-enable-cua-keys nil) ; そのままだと C-x が切り取りになってしまったりするので無効化
 
 ;;--------------------------------------------------------------------------
-;; Cocoa Emacs $B$N8@8l@_Dj(B
+;; Cocoa Emacs の言語設定
 ;;--------------------------------------------------------------------------
 (when platform-darwin-p
-  ;; $BF|K\8l@_Dj(B
+  ;; 日本語設定
   (set-language-environment 'Japanese)
   (prefer-coding-system 'utf-8)
 
-  ;; Meta$B%-!<$r(BCommand$B%\%?%s$KJQ99(B
-  ;; Carbon$B$+$i(BCocoa$B$X(B--Snow Leopard$B$G(BEmacs 23$B$r;H$&!J(B3$B!K(B - builder
+  ;; MetaキーをCommandボタンに変更
+  ;; CarbonからCocoaへ--Snow LeopardでEmacs 23を使う（3） - builder
   ;; http://builder.japan.zdnet.com/os-admin/sp_snow-leopard-09/20410578/
   (setq ns-command-modifier (quote meta))
   (setq ns-alternate-modifier (quote super))
 
-  ;; Cocoa Emacs(Emacs23)$B$G$NF|K\8l%U%)%s%H@_Dj(B
+  ;; Cocoa Emacs(Emacs23)での日本語フォント設定
   ;; http://macemacsjp.sourceforge.jp/index.php?MacFontSetting#h3b01bb4
   (create-fontset-from-ascii-font "Menlo-14:weight=normal:slant=normal" nil "menlokakugo")
   (set-fontset-font "fontset-menlokakugo" 'unicode (font-spec :family "Hiragino Kaku Gothic ProN" ) nil 'append)
@@ -717,18 +718,18 @@
   )
 
 ;;--------------------------------------------------------------------------
-;; Cocoa Emacs$B$G%P%C%/%9%i%C%7%e$,>e<j$/F~NO=PMh$J$$BP:v(B
+;; Cocoa Emacsでバックスラッシュが上手く入力出来ない対策
 ;;
-;;   Mac$B$J(BEmacs$B$G%P%C%/%9%i%C%7%e$r4JC1$KF~NO$7$?$$(B - Watson$B$N%a%b(B
+;;   MacなEmacsでバックスラッシュを簡単に入力したい - Watsonのメモ
 ;;   http://d.hatena.ne.jp/Watson/20100207/1265476938
 ;;    
-;;   Carbon Emacs $B$G!V(B\($B%P%C%/%9%i%C%7%e(B)$B!W$rF~NO$9$k(B - $B$"$$$W$i$W$i!((B
+;;   Carbon Emacs で「\(バックスラッシュ)」を入力する - あいぷらぷら；
 ;;   http://d.hatena.ne.jp/june29/20080204/1202119521
 ;;--------------------------------------------------------------------------
-(define-key global-map [?\(J\(B] [?\\])
-(define-key global-map [?\C-(J\(B] [?\C-\\])
-(define-key global-map [?\M-(J\(B] [?\M-\\])
-(define-key global-map [?\C-\M-(J\(B] [?\C-\M-\\])
+(define-key global-map [?\¥] [?\\])
+(define-key global-map [?\C-¥] [?\C-\\])
+(define-key global-map [?\M-¥] [?\M-\\])
+(define-key global-map [?\C-\M-¥] [?\C-\M-\\])
 
 ;;--------------------------------------------------------------------------
 ;; auto-shell-command
@@ -736,24 +737,24 @@
 ;; (load-file "~/Documents/auto-shell-command/auto-shell-command.el")
 ;; (require 'auto-shell-command)
 
-;; $B%-!<%P%$%s%I$N@_Dj(B
+;; キーバインドの設定
 (global-set-key (kbd "C-c C-m") 'ascmd:toggle)      ; Temporarily on/off auto-shell-command run
 (global-set-key (kbd "C-c C-,") 'ascmd:popup)  ; Pop up '*Auto Shell Command*'
 (global-set-key (kbd "C-c C-.") 'ascmd:exec)   ; Exec-command specify file name
 
-;; $B7k2L$NDLCN$r(BGrowl$B$G9T$&(B
+;; 結果の通知をGrowlで行う
 (when platform-darwin-p
   (defun ascmd:notify (msg) (deferred:process-shell (format "growlnotify -m %s -t emacs" msg))))
 
-;; $B%(%i!<;~$N%]%C%W%"%C%W$r8+$d$9$/$9$k!#(B $B"((B (require 'popwin) $B$,I,MW$G$9!#(B
+;; エラー時のポップアップを見やすくする。 ※ (require 'popwin) が必要です。
 (push '("*Auto Shell Command*" :height 20 :noselect t) popwin:special-display-config)
 
 ;;--------------------------------------------------------------------------
 ;; duplicate-thing
-;;   $B%+!<%=%k9T$rJ#@=$9$k!"HO0OA*Br;~$OHO0O$rJ#@=(B
+;;   カーソル行を複製する、範囲選択時は範囲を複製
 ;;--------------------------------------------------------------------------
 (require 'duplicate-thing)
-(global-set-key (kbd "M-c") 'duplicate-thing) ; $B85$N%-!<$O(Bcapitalize-word
+(global-set-key (kbd "M-c") 'duplicate-thing) ; 元のキーはcapitalize-word
 
 ;;--------------------------------------------------------------------------
 ;; lispxmp
@@ -791,7 +792,7 @@
 ;;auto-save-buffers-enhanced
 ;;--------------------------------------------------------------------------
 (require 'auto-save-buffers-enhanced)
-(setq auto-save-buffers-enhanced-interval 1) ; $B;XDj$N%"%$%I%kIC$GJ]B8(B
+(setq auto-save-buffers-enhanced-interval 1) ; 指定のアイドル秒で保存
 (auto-save-buffers-enhanced t)
 
 ;;--------------------------------------------------------------------------
@@ -807,7 +808,7 @@
 (require 'markdown-mode)
 (add-to-list 'auto-mode-alist '("\\.md$\\|\\.markdown$" . markdown-mode))
 
-;; $BJQ99=PMh$J$$!&!&(B
+;; 変更出来ない・・
 ;; (add-hook 'markdown-mode-hook
 ;;           '(lambda ()
 ;;              (define-key markdown-mode-map [M-n] 'scroll-next-10-line)
@@ -859,7 +860,7 @@
 ;;--------------------------------------------------------------------------
 ;; anything-patch
 ;;--------------------------------------------------------------------------
-;; anything-c-source-ffap-line $B$,@5$7$/F0$+$J$$LdBj$r=$@5(B
+;; anything-c-source-ffap-line が正しく動かない問題を修正
 (defun anything-c-shorten-home-path (files)
   "Replaces /home/user with ~."
   (let ((home (replace-regexp-in-string "\\\\" "/" ; stupid Windows...
@@ -867,19 +868,19 @@
     (anything-transform-mapcar
      (lambda (file)
        (if (and (stringp file) (string-match home file))
-           (replace-match "~" nil nil file)  ; $B=$@52U=j(B
+           (replace-match "~" nil nil file)  ; 修正箇所
          file))
      files)))
 
-;; pop-tag-mark(M-*) $B$G%8%c%s%W@h$+$iLa$l$k$h$&$K(B
+;; pop-tag-mark(M-*) でジャンプ先から戻れるように
 (defun anything-c-ffap-line-candidates ()
   (with-anything-current-buffer
     (anything-attrset 'ffap-line-location (anything-c-ffap-file-line-at-point)))
   (anything-aif (anything-attr 'ffap-line-location)
     (destructuring-bind (file . line) it
-      (with-anything-current-buffer (ring-insert find-tag-marker-ring (point-marker))) ; find-tag-marker-ring$B$K%^!<%/$rA^F~(B
-      ;; (with-anything-current-buffer (ring-insert global-mark-ring (point-marker))) ; find-tag-marker-ring$B$K%^!<%/$rA^F~(B
-      ;; (with-anything-current-buffer (set-mark-command)) ; find-tag-marker-ring$B$K%^!<%/$rA^F~(B
+      (with-anything-current-buffer (ring-insert find-tag-marker-ring (point-marker))) ; find-tag-marker-ringにマークを挿入
+      ;; (with-anything-current-buffer (ring-insert global-mark-ring (point-marker))) ; find-tag-marker-ringにマークを挿入
+      ;; (with-anything-current-buffer (set-mark-command)) ; find-tag-marker-ringにマークを挿入
       (list (cons (format "%s (line %d)" file line) file)))))
 
 ;;--------------------------------------------------------------------------
@@ -947,6 +948,6 @@ print (which_library (%%[%s]))'" name name)))
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ;;--------------------------------------------------------------------------
-;; $B4D6-8GM-$N@_Dj(B
+;; 環境固有の設定
 ;;-------------------------------------------------------------------------
 (require 'private)
