@@ -12,7 +12,7 @@
 (require 'platform-p)
 
 ;;--------------------------------------------------------------------------
-;;package & MELPA
+;; package & MELPA
 ;;--------------------------------------------------------------------------
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
@@ -22,12 +22,12 @@
 (require 'melpa)
 
 ;;--------------------------------------------------------------------------
-;;自作関数
+;; 自作関数
 ;;-------------------------------------------------------------------------
 (require 'my-functions)
 
 ;;--------------------------------------------------------------------------
-;;設定
+;; 設定
 ;;-------------------------------------------------------------------------
 
 ;; コマンドメモ
@@ -70,11 +70,11 @@
 
 ;; 編集 mode の追加 (prolog mode は消える)
 (setq auto-mode-alist
-      (append '(("\\.c$" . c-mode)	
-		("\\.pl$" . cperl-mode)
-		("\\.cpp$" . c++-mode)
-		("\\.h$" . c++-mode)
-		("[Mm]akefile" . makefile-mode)
+      (append '(("\\.c$"           . c-mode)	
+		("\\.pl$"          . cperl-mode)
+		("\\.cpp$"         . c++-mode)
+		("\\.h$"           . c++-mode)
+		("[Mm]akefile"     . makefile-mode)
 		("\\.dat$\\|.mch$" . hexl-mode))
 	      auto-mode-alist))
 
@@ -94,50 +94,58 @@
 ;; ffap
 (ffap-bindings)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;Emacsに必要なパスを通す
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ナロイングを有効に
+(put 'narrow-to-region 'disabled nil)
+
+;; transient-mark-mode
+(setq transient-mark-mode t)
+
+;;--------------------------------------------------------------------------
+;; Emacsに必要なパスを通す 
+;;-------------------------------------------------------------------------
 ;; http://sakito.jp/emacs/emacsshell.html#path
 ;; より下に記述した物が PATH の先頭に追加されます
-(dolist (dir (list
-              "/usr/X11/bin"
-              "/usr/local/bin"
-              "/sbin"
-              "/usr/sbin"
-              "/bin"
-              "/usr/bin"
-              "/usr/local/mysql/bin"
-              "/Developer/Tools"
-              "/usr/local/sbin"
-              "/opt/local/sbin"
-              "/opt/local/bin" ;; これが/usr/binよりも下に書いてあればよい
-              "/usr/local/bin"
-              (expand-file-name "~/bin")
-              (expand-file-name "~/bin/gnuplot")
-              ))
-  ;; PATH と exec-path に同じ物を追加します
-  (when ;; (and 
-         (file-exists-p dir) ;; (not (member dir exec-path)))
-    (setenv "PATH" (concat dir ":" (getenv "PATH")))
-    (setq exec-path (append (list dir) exec-path))))
+(when platform-darwin-p
+  (dolist (dir (list
+                "/usr/X11/bin"
+                "/usr/local/bin"
+                "/sbin"
+                "/usr/sbin"
+                "/bin"
+                "/usr/bin"
+                "/usr/local/mysql/bin"
+                "/Developer/Tools"
+                "/usr/local/sbin"
+                "/opt/local/sbin"
+                "/opt/local/bin" ;; これが/usr/binよりも下に書いてあればよい
+                "/usr/local/bin"
+                (expand-file-name "~/bin")
+                (expand-file-name "~/bin/gnuplot")
+                ))
+    ;; PATH と exec-path に同じ物を追加します
+    (when ;; (and 
+        (file-exists-p dir) ;; (not (member dir exec-path)))
+      (setenv "PATH" (concat dir ":" (getenv "PATH")))
+      (setq exec-path (append (list dir) exec-path))))
+  )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;shell-mode
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--------------------------------------------------------------------------
+;; shell-mode
+;;-------------------------------------------------------------------------
 ; .bashrcでcdやpushd,popdにエイリアスを貼る場合は、Emacs側にも伝えておく必要がある
 ; http://www.geocities.co.jp/SiliconValley-Bay/9285/EMACS-JA/emacs_412.html
 ;(setq shell-pushd-regexp "\\(cd\\|pushd\\)")
 ;(setq shell-popd-regexp "\\(bd\\|popd\\)")
 
 ;; shell-mode でエスケープを綺麗に表示
-(autoload 'ansi-color-for-comint-mode-on "ansi-color"
-   "Set `ansi-color-for-comint-mode' to t." t)
-(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+(when platform-darwin-p
+  (autoload 'ansi-color-for-comint-mode-on "ansi-color"
+    "Set `ansi-color-for-comint-mode' to t." t)
+  (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;キーバインドの設定
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;--------------------------------------------------------------------------
+;; キーバインドの設定
+;;-------------------------------------------------------------------------
 ; キーバインド
 (global-unset-key "\C-h")
 (global-set-key "\C-h" 'delete-backward-char)
@@ -194,18 +202,17 @@
 
 (global-set-key (kbd "C-c C-c") 'shell-command-prev)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;Info-mode
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;--------------------------------------------------------------------------
+;; Info-mode
+;;-------------------------------------------------------------------------
 ;; キーバインドの変更
 (add-hook 'Info-mode-hook
 	  '(lambda () (define-key Info-mode-map [M-n] 'scroll-next-10-line)) ;元のキーは、clone-buffer
 	  )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;ウィンドウサイズ
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--------------------------------------------------------------------------
+;; ウィンドウサイズ
+;;-------------------------------------------------------------------------
 (setq default-frame-alist
       (append (list
 	       '(top . 0)
@@ -215,18 +222,17 @@
 	       )
                default-frame-alist))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;Font & Color
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--------------------------------------------------------------------------
+;; Font & Color
+;;-------------------------------------------------------------------------
 (require 'color-setting)
 
 ; 行間を開ける量、これを調整することでかなり見え方が変わる
 (setq-default line-spacing 1)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; C, C++
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;--------------------------------------------------------------------------
+;; C, C++
+;;-------------------------------------------------------------------------
 ;; ヒント
 (defface hint-face '((t (:foreground "#c0c0c0"))) nil)
 
@@ -269,18 +275,17 @@
 	     (local-set-key "\C-cc" 'c-insert-function-comment)
 	     (local-set-key "\C-cn" 'c-insert-name-comment)
 	     (local-set-key "\C-ci" 'c-insert-if0-region)
-	     (local-set-key "\C-c\C-u" 'codegen-update) ; 元のキーは、c-up-conditional
+	     (local-set-key "\C-c\C-u" 'codegen-update) ; 元のキーは、c-up-conditional @delete
 	     ))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;dired
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; dired-x
+;;--------------------------------------------------------------------------
+;; dired-x
+;;-------------------------------------------------------------------------
 (require 'dired-x)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;RUBY
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--------------------------------------------------------------------------
+;; RUBY
+;;-------------------------------------------------------------------------
 (autoload 'ruby-mode "ruby-mode"
   "Mode for editing ruby source files" t)
 (setq auto-mode-alist
@@ -288,6 +293,7 @@
 (setq interpreter-mode-alist (append '(("ruby" . ruby-mode))
                                      interpreter-mode-alist))
 
+;; @delete
 ; Meadow3になってからのような気がするが、何故かautoloadの設定が効かなくなってしまった
 ; requireすれば動くようになったのでとりあえずこれでしのぐ
 ;
@@ -297,9 +303,9 @@
 ;  "Set local key defs for inf-ruby in ruby-mode")
 ;(require 'inf-ruby)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;PHP
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--------------------------------------------------------------------------
+;; PHP
+;;-------------------------------------------------------------------------
 (autoload 'php-mode "php-mode" "PHP mode" t)
 
 (defcustom php-file-patterns (list "\\.php[s34]?\\'" "\\.phtml\\'" "\\.inc\\'")
@@ -313,9 +319,9 @@
                  (cons (car php-file-patterns-temp) 'php-mode))
     (setq php-file-patterns-temp (cdr php-file-patterns-temp))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; sdic-mode 用の設定
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--------------------------------------------------------------------------
+;; sdic
+;;-------------------------------------------------------------------------
 (setq load-path (cons "~/.emacs.d/site-lisp/sdic" load-path))
 (autoload 'sdic-describe-word "sdic" "英単語の意味を調べる" t nil)
 (global-set-key "\C-cw" 'sdic-describe-word)
@@ -326,9 +332,9 @@
 (setq sdic-eiwa-dictionary-list '((sdicf-client "~/.emacs.d/site-lisp/sdic/gene.sdic")))
 (setq sdic-waei-dictionary-list '((sdicf-client "~/.emacs.d/site-lisp/sdic/jedict.sdic")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;global
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--------------------------------------------------------------------------
+;; global @delete 
+;;-------------------------------------------------------------------------
 (autoload 'gtags-mode "gtags" "" t)
 (setq gtags-mode-hook
       '(lambda ()
@@ -348,9 +354,9 @@
 (fset 'gtags-next
    "\252\C-n\C-m\C-l")
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;pukiwiki
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--------------------------------------------------------------------------
+;; pukiwiki @delete
+;;-------------------------------------------------------------------------
 (setq pukiwiki-auto-insert nil)
 ;(setq pukiwiki-view-chip-away-bracket nil)
 ;(setq pukiwiki-auto-anchor nil)
@@ -378,21 +384,20 @@
 
 ;(setq pukiwiki-edit-save-buffer-dir "~/tmp/pukiwiki")
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;vc-mode
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;--------------------------------------------------------------------------
+;; vc-mode @delete
+;;-------------------------------------------------------------------------
 ;vc-cvs-diffの時に追加するオプション
 (setq vc-cvs-diff-switches '"-c")
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;vc-svn
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--------------------------------------------------------------------------
+;; vc-svn @delete
+;;-------------------------------------------------------------------------
 (add-to-list 'vc-handled-backends 'SVN)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;同一名バッファのパス名表示
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--------------------------------------------------------------------------
+;; 同一名バッファのパス名表示
+;;-------------------------------------------------------------------------
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
 
@@ -412,9 +417,9 @@
   (setq recentf-auto-save-timer (run-with-idle-timer 30 t 'recentf-save-list))
   (recentf-mode 1))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;color-moccur
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--------------------------------------------------------------------------
+;; color-moccur
+;;-------------------------------------------------------------------------
 (require 'color-moccur)
 
 ;; 複数の検索語や、特定のフェイスのみマッチ等の機能を有効にする
@@ -430,9 +435,9 @@
           '(lambda ()
              (local-set-key "O" 'dired-do-moccur)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;anything
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--------------------------------------------------------------------------
+;; anything
+;;-------------------------------------------------------------------------
 (require 'anything-startup)
 
 ; anything-for-filesの内容をカスタマイズ、anything-c-source-locateを除外
@@ -461,9 +466,9 @@
 (global-set-key (kbd "C-x a g") 'anything-google-suggest)
 (global-set-key (kbd "C-x a y") 'anything-show-kill-ring)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;anything-git-project
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--------------------------------------------------------------------------
+;; anything-git-project
+;;-------------------------------------------------------------------------
 (defun anything-c-sources-git-project-for (pwd)
   (loop for elt in
         '(("Modified files (%s)" . "--modified")
@@ -502,26 +507,19 @@
 (setq indent-line-function 'indent-relative-maybe)
 
 ;;--------------------------------------------------------------------------
-;;emacsclient サーバーの起動
+;; emacsclientサーバーの起動
 ;;-------------------------------------------------------------------------
 (server-start)
 
 ;;--------------------------------------------------------------------------
-;;url-retrieve-synchronously
-;;--------------------------------------------------------------------------
-;(setq url-proxy-services
-;      '(("http"     . "proxy.co.jp:8080")
-;        ("no_proxy" . "proxy.co.jp\\|proxy2.co.jp")))
-
-;;--------------------------------------------------------------------------
-;;oddmuse
+;; oddmuse @delete
 ;;--------------------------------------------------------------------------
 (require 'oddmuse)
 ;(setq url-proxy-services '(("http" . "proxy.co.jp:8080")))
 (oddmuse-mode-initialize)
 
 ;;--------------------------------------------------------------------------
-;;moccur-edit
+;;moccur-edit @delete
 ;;
 ;; * 検索する
 ;;   dmoccur や moccur ， moccur-grep ， moccur-grep-find などで検索して結果を表示させます．
@@ -561,18 +559,31 @@
 (require 'grep-edit)
 
 ;;--------------------------------------------------------------------------
-;; wdired.el
+;; wdired
 ;;--------------------------------------------------------------------------
 (require 'wdired)
 (define-key dired-mode-map "r" 'wdired-change-to-wdired-mode)
 
 ;;--------------------------------------------------------------------------
-;; google
+;; dired-details
+;;--------------------------------------------------------------------------
+(require 'dired-details)
+(dired-details-install)
+(setq dired-details-hidden-string "")
+
+;;--------------------------------------------------------------------------
+;; joseph-single-dired
+;;--------------------------------------------------------------------------
+(require 'joseph-single-dired)
+(eval-after-load 'dired '(require 'joseph-single-dired))
+
+;;--------------------------------------------------------------------------
+;; google @delete
 ;;--------------------------------------------------------------------------
 (load "google")
 
 ;;--------------------------------------------------------------------------
-;; view-mode-key
+;; view-mode-key @delete
 ;;--------------------------------------------------------------------------
 (load "view-mode-key")
 
@@ -583,12 +594,12 @@
 ;(setq hl-line-face 'underline)
 
 ;;--------------------------------------------------------------------------
-;; tortoise-svn
+;; tortoise-svn @delete
 ;;--------------------------------------------------------------------------
 (require 'tortoise-svn)
 
 ;;--------------------------------------------------------------------------
-;; rept-mode
+;; rept-mode @delete
 ;;--------------------------------------------------------------------------
 (require 'rept-mode)
 
@@ -599,12 +610,7 @@
 (setq rept-program-file "rept.bat")
 
 ;;--------------------------------------------------------------------------
-;;ナロイングの設定
-;;-------------------------------------------------------------------------
-(put 'narrow-to-region 'disabled nil)
-
-;;--------------------------------------------------------------------------
-;;ActionScript3.0
+;; ActionScript 3.0
 ;;-------------------------------------------------------------------------
 (autoload 'actionscript-mode "actionscript-mode" "actionscript" t)
 
@@ -613,7 +619,7 @@
               auto-mode-alist))
 
 ;;--------------------------------------------------------------------------
-;;text-translate
+;; text-translate @delete
 ;;-------------------------------------------------------------------------
 ;;(autoload 'text-translator "text-translator" "Text Translator" t)
 (require 'text-translator)
@@ -632,8 +638,8 @@
 ;; (setq text-translator-prefix-key "\M-n")
 
 ;;--------------------------------------------------------------------------
-;;auto-install
-;;(install-elisp-from-emacswiki "auto-install.el")
+;; auto-install
+;; (install-elisp-from-emacswiki "auto-install.el")
 ;;--------------------------------------------------------------------------
 (require 'auto-install)
 (auto-install-update-emacswiki-package-name t)
@@ -641,28 +647,15 @@
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
 ;;--------------------------------------------------------------------------
-;; open-junk-file.el
+;; open-junk-file
 ;; (install-elisp-from-emacswiki "open-junk-file.el")
 ;;--------------------------------------------------------------------------
 (require 'open-junk-file)
 (setq open-junk-file-format "~/Documents/junk/%Y-%m%d-%H%M%S.")
 (global-set-key "\C-xj" 'open-junk-file)
 
-;;--------------------------------------------------------------------------
-;; transient-mark-mode
-;;   C-sからそのままテキストコピーをよく使うので、やっぱりnilがいいや
-;;--------------------------------------------------------------------------
-(setq transient-mark-mode t)
-
-;;--------------------------------------------------------------------------
-;; color-moccur
-;; (install-elisp-from-emacswiki "color-moccur.el")
-;;--------------------------------------------------------------------------
-(require 'color-moccur)
-(setq moccur-split-word t)
-
 ;--------------------------------------------------------------------------
-;; autoinsert.el
+;; autoinsert
 ;;--------------------------------------------------------------------------
 (auto-insert-mode)
 (setq auto-insert-directory "~/.emacs.d/insert/") ; 最後の / は必須
@@ -671,8 +664,8 @@
 (define-auto-insert "blog.\\txt$" "template-blog.txt")
 
 ;;--------------------------------------------------------------------------
-;;ミニバッファ上で現在バッファ名を挿入する
-;;shell-command 等の実行に便利
+;; ミニバッファ上で現在バッファ名を挿入する
+;; shell-command 等の実行に便利
 ;;-------------------------------------------------------------------------
 (defun current-buffer-not-mini ()
   "Return current-buffer if current buffer is not the *mini-buffer*
@@ -688,20 +681,14 @@
 (define-key minibuffer-local-map "\C-c\C-c" 'insert-current-buffer-name)
 
 ;;--------------------------------------------------------------------------
-;;javascript-mode
-;;-------------------------------------------------------------------------
-;; ; インデント幅
-;; (setq javascript-indent-level 2)
-
-;;--------------------------------------------------------------------------
-;;html-fold
-;;(install-elisp "https://github.com/ataka/html-fold/raw/master/html-fold.el")
+;; html-fold
+;; (install-elisp "https://github.com/ataka/html-fold/raw/master/html-fold.el")
 ;;-------------------------------------------------------------------------
 (autoload 'html-fold-mode "html-fold" "Minor mode for hiding and revealing elements." t)
 
 ;;--------------------------------------------------------------------------
-;;haml
-;;http://www.ftnk.jp/~fumi/cl/2009-05-02-3.html
+;; haml
+;; http://www.ftnk.jp/~fumi/cl/2009-05-02-3.html
 ;;-------------------------------------------------------------------------
 ; haml-mode
 (require 'haml-mode)
@@ -717,7 +704,7 @@
 (setq scss-compile-at-save nil)
 
 ;;--------------------------------------------------------------------------
-;; popwin.el
+;; popwin
 ;; (auto-install-from-url "https://github.com/m2ym/popwin-el/raw/master/popwin.el")
 ;;--------------------------------------------------------------------------
 (require 'popwin)
@@ -745,7 +732,7 @@
 ;; (push '(dired-mode :position top) popwin:special-display-config) ; dired-jump-other-window (C-x 4 C-j)
 
 ;;--------------------------------------------------------------------------
-;;JavaScript
+;; JavaScript
 ;;
 ;; js2-20090723b.el (ダウンロード後、 js2.el に改名、要バイトコンパイル)
 ;; http://code.google.com/p/js2-mode/downloads/detail?name=js2-20090723b.el&can=2&q=
@@ -804,7 +791,7 @@
 (add-hook 'js2-mode-hook 'my-js2-mode-hook)
 
 ;;--------------------------------------------------------------------------
-;;直前に実行したシェルコマンドを実行
+;; 直前に実行したシェルコマンドを実行 @delete
 ;;-------------------------------------------------------------------------
 (defun shell-command-prev ()
   (interactive)
@@ -813,11 +800,11 @@
 (global-set-key (kbd "C-c C-c") 'shell-command-prev)
 
 ;;--------------------------------------------------------------------------
-;;Add-on SDK
+;; Add-on SDK
 ;;-------------------------------------------------------------------------
 (defun cfx-start() 
   (interactive)
-  (exec-shell "cd ~/app/addon-sdk-1.2.1/; source bin/activate" nil))
+  (exec-shell "cd ~/app/addon-sdk-1.14; source bin/activate" nil))
 
 (defun cfx-run() 
   (interactive)
@@ -831,7 +818,7 @@
 (global-set-key (kbd "C-c C-v") 'cfx-run)
 
 ;;--------------------------------------------------------------------------
-;;cua-mode
+;; cua-mode
 ;; 矩形領域に対してリアルタイムに文字列の挿入が出来たり出来る。
 ;;
 ;; cua-mode開始 .. 領域選択して、C-Enter
@@ -840,7 +827,7 @@
 (setq cua-enable-cua-keys nil) ; そのままだと C-x が切り取りになってしまったりするので無効化
 
 ;;--------------------------------------------------------------------------
-;;cycle-buffer.el
+;; cycle-buffer.el @delete
 ;;-------------------------------------------------------------------------
 ;; (autoload 'cycle-buffer "cycle-buffer" "Cycle forward." t)
 ;; (autoload 'cycle-buffer-backward "cycle-buffer" "Cycle backward." t)
@@ -854,7 +841,7 @@
 ;; ;; (global-set-key [(shift f10)] 'cycle-buffer-permissive)
 
 ;;--------------------------------------------------------------------------
-;;直前のバッファに切り替え
+;; 直前のバッファに切り替え @delete
 ;;-------------------------------------------------------------------------
 ;;; last-buffer
 (defvar last-buffer-saved nil)
@@ -888,14 +875,13 @@
 ;(global-set-key (kbd "M-l") 'switch-to-last-buffer)
 
 ;;--------------------------------------------------------------------------
-;; for Cocoa Emacs
+;; Cocoa Emacs の言語設定
 ;;--------------------------------------------------------------------------
-
-;; 日本語設定
-(set-language-environment 'Japanese)
-(prefer-coding-system 'utf-8)
-
 (when platform-darwin-p
+  ;; 日本語設定
+  (set-language-environment 'Japanese)
+  (prefer-coding-system 'utf-8)
+
   ;; MetaキーをCommandボタンに変更
   ;; CarbonからCocoaへ--Snow LeopardでEmacs 23を使う（3） - builder
   ;; http://builder.japan.zdnet.com/os-admin/sp_snow-leopard-09/20410578/
@@ -911,12 +897,26 @@
   )
 
 ;;--------------------------------------------------------------------------
-;; smartrep
+;; Cocoa Emacsでバックスラッシュが上手く入力出来ない対策
+;;
+;;   MacなEmacsでバックスラッシュを簡単に入力したい - Watsonのメモ
+;;   http://d.hatena.ne.jp/Watson/20100207/1265476938
+;;    
+;;   Carbon Emacs で「\(バックスラッシュ)」を入力する - あいぷらぷら；
+;;   http://d.hatena.ne.jp/june29/20080204/1202119521
+;;--------------------------------------------------------------------------
+(define-key global-map [?\\] [?\\])
+(define-key global-map [?\C-\] [?\C-\\])
+(define-key global-map [?\M-\] [?\M-\\])
+(define-key global-map [?\C-\M-\] [?\C-\M-\\])
+
+;;--------------------------------------------------------------------------
+;; smartrep @delete
 ;;--------------------------------------------------------------------------
 (require 'smartrep)
 
 ;;--------------------------------------------------------------------------
-;; smartrep viewer
+;; smartrep viewer @delete
 ;;--------------------------------------------------------------------------
 
 ;; ; プレフィックスキーの設定
@@ -948,47 +948,20 @@
 ;;  )
 
 ;;--------------------------------------------------------------------------
-;; jaunte.el - EmacsでHit a Hint(改)
+;; jaunte.el - EmacsでHit a Hint(改) @delete
 ;;--------------------------------------------------------------------------
 (require 'jaunte)
 ;(global-set-key (kbd "C-c C-j") 'jaunte)
 (global-set-key (kbd "M-l") 'jaunte)
 
 ;;--------------------------------------------------------------------------
-;; zencoding
+;; zencoding @delete
 ;;--------------------------------------------------------------------------
 ;; (require 'zencoding-mode)
 ;; (add-hook 'html-mode-hook 'zencoding-mode)
 
 ;;--------------------------------------------------------------------------
-;; Cocoa Emacsでバックスラッシュが上手く入力出来ない対策
-;;
-;;   MacなEmacsでバックスラッシュを簡単に入力したい - Watsonのメモ
-;;   http://d.hatena.ne.jp/Watson/20100207/1265476938
-;;    
-;;   Carbon Emacs で「\(バックスラッシュ)」を入力する - あいぷらぷら；
-;;   http://d.hatena.ne.jp/june29/20080204/1202119521
-;;--------------------------------------------------------------------------
-(define-key global-map [?\\] [?\\])
-(define-key global-map [?\C-\] [?\C-\\])
-(define-key global-map [?\M-\] [?\M-\\])
-(define-key global-map [?\C-\M-\] [?\C-\M-\\])
-
-;;--------------------------------------------------------------------------
-;; dired-details
-;;--------------------------------------------------------------------------
-(require 'dired-details)
-(dired-details-install)
-(setq dired-details-hidden-string "")
-
-;;--------------------------------------------------------------------------
-;; joseph-single-dired
-;;--------------------------------------------------------------------------
-(require 'joseph-single-dired)
-(eval-after-load 'dired '(require 'joseph-single-dired))
-
-;;--------------------------------------------------------------------------
-;; Titanium
+;; Titanium @delete
 ;;--------------------------------------------------------------------------
 ;; (defun ti-send-run ()
 ;;   (setq proc (open-network-stream "titanium" nil "127.0.0.1" 9090))
@@ -1021,19 +994,20 @@
 (push '("*Auto Shell Command*" :height 20 :noselect t) popwin:special-display-config)
 
 ;;--------------------------------------------------------------------------
-;;カーソル行を複製する、範囲選択時は範囲を複製
+;; duplicate-thing
+;;   カーソル行を複製する、範囲選択時は範囲を複製
 ;;--------------------------------------------------------------------------
-;; (require 'duplicate-thing) ; packageでインストールした時はrequireは要らないようだ
+(require 'duplicate-thing)
 (global-set-key (kbd "M-c") 'duplicate-thing) ; 元のキーはcapitalize-word
 
 ;;--------------------------------------------------------------------------
-;;lispxmp
+;; lispxmp
 ;;--------------------------------------------------------------------------
 (require 'lispxmp)
 (define-key emacs-lisp-mode-map (kbd "C-c C-d") 'lispxmp)
 
 ;;--------------------------------------------------------------------------
-;;paredit
+;; paredit
 ;;--------------------------------------------------------------------------
 (require 'paredit)
 (add-hook 'emacs-lisp-mode-hook 'enable-paredit-mode)
@@ -1092,7 +1066,7 @@
 (global-set-key (kbd "C-M-@") 'er/contract-region)
 
 ;;--------------------------------------------------------------------------
-;; mark-multiple
+;; mark-multiple @delete
 ;;--------------------------------------------------------------------------
 ;; (require 'inline-string-rectangle)
 ;; (global-set-key (kbd "C-x r t") 'inline-string-rectangle)
@@ -1126,7 +1100,7 @@
 ;; (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 
 ;;--------------------------------------------------------------------------
-;; winden-window
+;; winden-window @delete
 ;;--------------------------------------------------------------------------
 ;; (require 'widen-window)
 ;; (global-widen-window-mode t)
@@ -1172,7 +1146,6 @@
 ;;--------------------------------------------------------------------------
 ;; anything-patch
 ;;--------------------------------------------------------------------------
-
 ;; anything-c-source-ffap-line が正しく動かない問題を修正
 (defun anything-c-shorten-home-path (files)
   "Replaces /home/user with ~."
@@ -1258,18 +1231,16 @@ print (which_library (%%[%s]))'" name name)))
      (define-key anything-c-moccur-anything-map (kbd "C-c C-a")
        'all-from-anything-moccur)))
 
-;;--------------------------------------------------------------------------
-;; moz.el
-;;--------------------------------------------------------------------------
-;; (load "~/Dropbox/tmp/milkode-firefox.el")
-
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ;;--------------------------------------------------------------------------
-;;環境固有の設定
+;; 環境固有の設定
 ;;-------------------------------------------------------------------------
 (require 'private)
 
+;;--------------------------------------------------------------------------
+;; 自動で追加されたもの @delete
+;;-------------------------------------------------------------------------
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
