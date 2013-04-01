@@ -1,5 +1,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; .emacs
+;; .emacs.d/init.el
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; 文字コードはJISにしておかないと日本語がうまく表示されない
@@ -1315,18 +1315,6 @@
 ;; エラー時のポップアップを見やすくする。 ※ (require 'popwin) が必要です。
 (push '("*Auto Shell Command*" :height 20 :noselect t) popwin:special-display-config)
 
-;; コマンドリストの設定 (下が優先高)
-(ascmd:add '("Documents/milkode/test/.*\.rb$" "ruby -I../lib -I../test ./rake_test_loader.rb $FILE"))
-(ascmd:add '("Documents/milkode/test/runner.rb" "rake test"))
-(ascmd:add '("Documents/milkode/lib/milkode/cdstk/package.rb" "(cd ~/Documents/milkode/test/ && ruby -I../lib -I../test ./test_package.rb)"))
-
-(ascmd:add '("Documents/qiita_mail/test/.*\.rb" "ruby -I../lib -I../test $FILE"))
-(ascmd:add '("Documents/ltsvr/test/.*\.rb" "ruby -I../lib -I../test $FILE"))
-(ascmd:add '("Documents/mygithub/test/.*\.rb" "ruby -I../lib -I../test $FILE"))
-
-(ascmd:add '("Resources/" "wget -O /dev/null http://0.0.0.0:9090/run"))
-(ascmd:add '("junk/.*\.rb" "ruby $FILE"))
-
 ;;--------------------------------------------------------------------------
 ;;カーソル行を複製する、範囲選択時は範囲を複製
 ;;--------------------------------------------------------------------------
@@ -1549,7 +1537,6 @@ print (which_library (%%[%s]))'" name name)))
 (require 'ffap)
 (add-to-list 'ffap-alist '(ruby-mode . ffap-ruby-mode))
 
-
 ;;--------------------------------------------------------------------------
 ;; all-ext
 ;;--------------------------------------------------------------------------
@@ -1574,9 +1561,10 @@ print (which_library (%%[%s]))'" name name)))
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ;;--------------------------------------------------------------------------
-;;プロジェクト毎の専用設定
+;;環境固有の設定
 ;;-------------------------------------------------------------------------
-;(load-file "project.el")
+(require 'private)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
