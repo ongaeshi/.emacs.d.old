@@ -275,7 +275,6 @@
 	     (local-set-key "\C-cc" 'c-insert-function-comment)
 	     (local-set-key "\C-cn" 'c-insert-name-comment)
 	     (local-set-key "\C-ci" 'c-insert-if0-region)
-	     (local-set-key "\C-c\C-u" 'codegen-update) ; 元のキーは、c-up-conditional @delete
 	     ))
 
 ;;--------------------------------------------------------------------------
@@ -292,16 +291,6 @@
       (append '(("\\.rb$\\|\\.ru$\\|Rakefile$\\|Gemfile$" . ruby-mode)) auto-mode-alist))
 (setq interpreter-mode-alist (append '(("ruby" . ruby-mode))
                                      interpreter-mode-alist))
-
-;; @delete
-; Meadow3になってからのような気がするが、何故かautoloadの設定が効かなくなってしまった
-; requireすれば動くようになったのでとりあえずこれでしのぐ
-;
-;(autoload 'run-ruby "inf-ruby"
-;  "Run an inferior Ruby process")
-;(autoload 'inf-ruby-keys "inf-ruby"
-;  "Set local key defs for inf-ruby in ruby-mode")
-;(require 'inf-ruby)
 
 ;;--------------------------------------------------------------------------
 ;; PHP
@@ -331,69 +320,6 @@
 ;; 辞書ファイルの置き場所
 (setq sdic-eiwa-dictionary-list '((sdicf-client "~/.emacs.d/site-lisp/sdic/gene.sdic")))
 (setq sdic-waei-dictionary-list '((sdicf-client "~/.emacs.d/site-lisp/sdic/jedict.sdic")))
-
-;;--------------------------------------------------------------------------
-;; global @delete 
-;;-------------------------------------------------------------------------
-(autoload 'gtags-mode "gtags" "" t)
-(setq gtags-mode-hook
-      '(lambda ()
-         (local-set-key "\M-." 'gtags-find-tag)	;関数の定義元へ
-         (local-set-key "\M-," 'gtags-find-rtag) ;関数の参照先へ
-         (local-set-key "\M-m" 'gtags-find-symbol) ;変数の定義元/参照先へ
-;         (local-set-key "\M-g" 'gtags-find-with-grep) ;タグを使ってgrep <-- 使いでがないので削除
-	 (local-set-key "\M-]" 'gtags-next)
-         ))
-
-(add-hook 'c-mode-common-hook
-          '(lambda()
-             (gtags-mode 1) ;Cのソースを開いたら自動的にgtags-modeをon
-             ))
-
-; 次のシンボルに移動するためのキーボードマクロ
-(fset 'gtags-next
-   "\252\C-n\C-m\C-l")
-
-;;--------------------------------------------------------------------------
-;; pukiwiki @delete
-;;-------------------------------------------------------------------------
-(setq pukiwiki-auto-insert nil)
-;(setq pukiwiki-view-chip-away-bracket nil)
-;(setq pukiwiki-auto-anchor nil)
-
-;(setq http-proxy-server "proxy.co.jp")
-;(setq http-proxy-port 8080)
-
-(setq pukiwiki-no-proxy-domains-list '("localhost"))
-
-(autoload 'pukiwiki-edit
-  "pukiwiki-mode" "pukwiki-mode." t)
-
-(autoload 'pukiwiki-index
-  "pukiwiki-mode" "pukwiki-mode." t)
-
-(autoload 'pukiwiki-edit-url
-  "pukiwiki-mode" "pukwiki-mode." t)
-
-(setq
- pukiwiki-site-list
- '(("pukiwiki"
-    "http://pukiwiki.sourceforge.jp/"
-    nil euc-jp-dos)
-   ))
-
-;(setq pukiwiki-edit-save-buffer-dir "~/tmp/pukiwiki")
-
-;;--------------------------------------------------------------------------
-;; vc-mode @delete
-;;-------------------------------------------------------------------------
-;vc-cvs-diffの時に追加するオプション
-(setq vc-cvs-diff-switches '"-c")
-
-;;--------------------------------------------------------------------------
-;; vc-svn @delete
-;;-------------------------------------------------------------------------
-(add-to-list 'vc-handled-backends 'SVN)
 
 ;;--------------------------------------------------------------------------
 ;; 同一名バッファのパス名表示
@@ -512,14 +438,7 @@
 (server-start)
 
 ;;--------------------------------------------------------------------------
-;; oddmuse @delete
-;;--------------------------------------------------------------------------
-(require 'oddmuse)
-;(setq url-proxy-services '(("http" . "proxy.co.jp:8080")))
-(oddmuse-mode-initialize)
-
-;;--------------------------------------------------------------------------
-;;moccur-edit @delete
+;;moccur-edit
 ;;
 ;; * 検索する
 ;;   dmoccur や moccur ， moccur-grep ， moccur-grep-find などで検索して結果を表示させます．
@@ -578,38 +497,6 @@
 (eval-after-load 'dired '(require 'joseph-single-dired))
 
 ;;--------------------------------------------------------------------------
-;; google @delete
-;;--------------------------------------------------------------------------
-(load "google")
-
-;;--------------------------------------------------------------------------
-;; view-mode-key @delete
-;;--------------------------------------------------------------------------
-(load "view-mode-key")
-
-;; C-xC-yでview-modeのトグル
-(global-set-key "\C-x\C-y" 'toggle-view-mode)
-
-;; 強調は下線表示に
-;(setq hl-line-face 'underline)
-
-;;--------------------------------------------------------------------------
-;; tortoise-svn @delete
-;;--------------------------------------------------------------------------
-(require 'tortoise-svn)
-
-;;--------------------------------------------------------------------------
-;; rept-mode @delete
-;;--------------------------------------------------------------------------
-(require 'rept-mode)
-
-; reptファイルを開いたらrept-modeへ
-(add-to-list 'auto-mode-alist '("\\.rept$" . rept-mode))
-
-; reptファイルの置き場所を指定
-(setq rept-program-file "rept.bat")
-
-;;--------------------------------------------------------------------------
 ;; ActionScript 3.0
 ;;-------------------------------------------------------------------------
 (autoload 'actionscript-mode "actionscript-mode" "actionscript" t)
@@ -617,25 +504,6 @@
 (setq auto-mode-alist
       (append '(("\\.as$" . actionscript-mode))
               auto-mode-alist))
-
-;;--------------------------------------------------------------------------
-;; text-translate @delete
-;;-------------------------------------------------------------------------
-;;(autoload 'text-translator "text-translator" "Text Translator" t)
-(require 'text-translator)
-
-(global-set-key "\C-x\M-t" 'text-translator)
-(global-set-key "\C-x\M-T" 'text-translator-translate-last-string)
-
-;; 自動選択に使用する関数を設定
-(setq text-translator-auto-selection-func
-      'text-translator-translate-by-auto-selection-enja)
-
-;; グローバルキーを設定
-(global-set-key "\C-xt" 'text-translator-translate-by-auto-selection)
-
-;; プリフィックスキーを変更する場合.
-;; (setq text-translator-prefix-key "\M-n")
 
 ;;--------------------------------------------------------------------------
 ;; auto-install
@@ -791,7 +659,7 @@
 (add-hook 'js2-mode-hook 'my-js2-mode-hook)
 
 ;;--------------------------------------------------------------------------
-;; 直前に実行したシェルコマンドを実行 @delete
+;; 直前に実行したシェルコマンドを実行
 ;;-------------------------------------------------------------------------
 (defun shell-command-prev ()
   (interactive)
@@ -825,54 +693,6 @@
 ;;-------------------------------------------------------------------------
 (cua-mode t)
 (setq cua-enable-cua-keys nil) ; そのままだと C-x が切り取りになってしまったりするので無効化
-
-;;--------------------------------------------------------------------------
-;; cycle-buffer.el @delete
-;;-------------------------------------------------------------------------
-;; (autoload 'cycle-buffer "cycle-buffer" "Cycle forward." t)
-;; (autoload 'cycle-buffer-backward "cycle-buffer" "Cycle backward." t)
-;; (autoload 'cycle-buffer-permissive "cycle-buffer" "Cycle forward allowing *buffers*." t)
-;; (autoload 'cycle-buffer-backward-permissive "cycle-buffer" "Cycle backward allowing *buffers*." t)
-;; (autoload 'cycle-buffer-toggle-interesting "cycle-buffer" "Toggle if this buffer will be considered." t)
-
-;; (global-set-key (kbd "M-l")       'cycle-buffer)
-;; (global-set-key (kbd "M-m")       'cycle-buffer-backward)
-;; ;; (global-set-key [(shift f9)]  'cycle-buffer-backward-permissive)
-;; ;; (global-set-key [(shift f10)] 'cycle-buffer-permissive)
-
-;;--------------------------------------------------------------------------
-;; 直前のバッファに切り替え @delete
-;;-------------------------------------------------------------------------
-;;; last-buffer
-(defvar last-buffer-saved nil)
-
-;; last-bufferで選択しないバッファを設定
-(defvar last-buffer-exclude-name-regexp
-  (rx (or "*mplayer*" "*Completions*" "*Org Export/Publishing Help*"
-          (regexp "^ "))))
-(defun record-last-buffer ()
-  (when (and (one-window-p)
-             (not (eq (window-buffer) (car last-buffer-saved)))
-             (not (string-match last-buffer-exclude-name-regexp
-                                (buffer-name (window-buffer)))))
-    (setq last-buffer-saved
-          (cons (window-buffer) (car last-buffer-saved)))))
-(add-hook 'window-configuration-change-hook 'record-last-buffer)
-
-(defun switch-to-last-buffer ()
-  (interactive)
-  (condition-case nil
-      (switch-to-buffer (cdr last-buffer-saved))
-    (error (switch-to-buffer (other-buffer)))))
-
-(defun switch-to-last-buffer-or-other-window ()
-  (interactive)
-  (if (one-window-p t)
-      (switch-to-last-buffer)
-    (other-window 1)))
-
-;(global-set-key (kbd "C-t") 'switch-to-last-buffer-or-other-window)
-;(global-set-key (kbd "M-l") 'switch-to-last-buffer)
 
 ;;--------------------------------------------------------------------------
 ;; Cocoa Emacs の言語設定
@@ -909,71 +729,6 @@
 (define-key global-map [?\C-\] [?\C-\\])
 (define-key global-map [?\M-\] [?\M-\\])
 (define-key global-map [?\C-\M-\] [?\C-\M-\\])
-
-;;--------------------------------------------------------------------------
-;; smartrep @delete
-;;--------------------------------------------------------------------------
-(require 'smartrep)
-
-;;--------------------------------------------------------------------------
-;; smartrep viewer @delete
-;;--------------------------------------------------------------------------
-
-;; ; プレフィックスキーの設定
-;; (defvar ctl-t-map (make-keymap))
-;; (define-key global-map "\C-t" ctl-t-map)
-
-;; ; キーバインドの設定
-;; (smartrep-define-key
-;;  global-map "C-t"
-;;  '(
-;;    ; main-window
-;;    ("SPC" . 'scroll-up)
-;;    ("b" . 'scroll-down)
-;;    ("l" . 'forward-char)
-;;    ("h" . 'backward-char)
-;;    ("j" . (lambda () (scroll-up 1)))
-;;    ("k" . (lambda () (scroll-up -1)))
-;;    ("a" . (lambda () (beginning-of-buffer)))
-;;    ("e" . (lambda () (end-of-buffer)))
-;;    ("i" . 'keyboard-quit)
-;;    ; other-window
-;;    ("n" . 'scroll-other-window)
-;;    ("N" . (lambda () (scroll-other-window '-)))
-;;    ("m" . (lambda () (scroll-other-window 1)))
-;;    ("," . (lambda () (scroll-other-window -1)))
-;;    ("A" . (lambda () (beginning-of-buffer-other-window 0)))
-;;    ("E" . (lambda () (end-of-buffer-other-window 0)))
-;;    )
-;;  )
-
-;;--------------------------------------------------------------------------
-;; jaunte.el - EmacsでHit a Hint(改) @delete
-;;--------------------------------------------------------------------------
-(require 'jaunte)
-;(global-set-key (kbd "C-c C-j") 'jaunte)
-(global-set-key (kbd "M-l") 'jaunte)
-
-;;--------------------------------------------------------------------------
-;; zencoding @delete
-;;--------------------------------------------------------------------------
-;; (require 'zencoding-mode)
-;; (add-hook 'html-mode-hook 'zencoding-mode)
-
-;;--------------------------------------------------------------------------
-;; Titanium @delete
-;;--------------------------------------------------------------------------
-;; (defun ti-send-run ()
-;;   (setq proc (open-network-stream "titanium" nil "127.0.0.1" 9090))
-;;   (process-send-string proc "GET /run HTTP/1.0\r\n\r\n")
-;;   (sleep-for 1)
-;;   (delete-process proc))
-
-;; (defun reload-titanium ()
-;;   (if (string-match "Resources" (buffer-file-name))
-;;         (ti-send-run)))
-
-;; (add-hook 'after-save-hook 'reload-titanium)
 
 ;;--------------------------------------------------------------------------
 ;; auto-shell-command
@@ -1066,27 +821,6 @@
 (global-set-key (kbd "C-M-@") 'er/contract-region)
 
 ;;--------------------------------------------------------------------------
-;; mark-multiple @delete
-;;--------------------------------------------------------------------------
-;; (require 'inline-string-rectangle)
-;; (global-set-key (kbd "C-x r t") 'inline-string-rectangle)
-
-;; (require 'mark-more-like-this)
-;; (global-set-key (kbd "C-<") 'mark-previous-like-this)
-;; (global-set-key (kbd "C->") 'mark-next-like-this)
-;; ;; (global-set-key (kbd "C-M-m") 'mark-more-like-this) ; like the other two, but takes an argument (negative is previous)
-;; (global-set-key (kbd "C-*") 'mark-all-like-this)
-
-;; ;; (add-hook 'sgml-mode-hook
-;; ;;           (lambda ()
-;; ;;             (require 'rename-sgml-tag)
-;; ;;             (define-key sgml-mode-map (kbd "C-c C-r") 'rename-sgml-tag)))
-;; (add-hook 'html-mode-hook
-;;           (lambda ()
-;;             (require 'rename-sgml-tag)
-;;             (define-key html-mode-map (kbd "C-c C-r") 'rename-sgml-tag)))
-
-;;--------------------------------------------------------------------------
 ;; multiple-cursors
 ;;--------------------------------------------------------------------------
 (require 'multiple-cursors)
@@ -1098,27 +832,6 @@
 ;; (global-set-key (kbd "C->") 'mc/mark-next-like-this)
 ;; (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 ;; (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-
-;;--------------------------------------------------------------------------
-;; winden-window @delete
-;;--------------------------------------------------------------------------
-;; (require 'widen-window)
-;; (global-widen-window-mode t)
-
-;; ;; windmove-default-keybindings に対応
-;; (setq ww-advised-functions
-;;       (append ww-advised-functions
-;; 	      '(windmove-up
-;; 		windmove-down
-;; 		windmove-right
-;; 		windmove-left)))
-
-;; ;; anythingとの相性を修正
-;; (defadvice anything (around disable-ww-mode activate)
-;;   (ad-deactivate-regexp "widen-window")
-;;   (unwind-protect
-;;       ad-do-it
-;;     (ad-activate-regexp "widen-window")))
 
 ;;--------------------------------------------------------------------------
 ;; anything-milkode
@@ -1237,19 +950,3 @@ print (which_library (%%[%s]))'" name name)))
 ;; 環境固有の設定
 ;;-------------------------------------------------------------------------
 (require 'private)
-
-;;--------------------------------------------------------------------------
-;; 自動で追加されたもの @delete
-;;-------------------------------------------------------------------------
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(safe-local-variable-values (quote ((encoding . utf-8)))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
