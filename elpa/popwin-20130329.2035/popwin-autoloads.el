@@ -6,7 +6,7 @@
 ;;;### (autoloads (popwin:messages popwin:find-file-tail popwin:find-file
 ;;;;;;  popwin:popup-buffer-tail popwin:one-window popwin:universal-display
 ;;;;;;  popwin:pop-to-buffer popwin:display-buffer popwin:popup-buffer)
-;;;;;;  "popwin" "popwin.el" (20734 41255))
+;;;;;;  "popwin" "popwin.el" (20829 41597))
 ;;; Generated autoloads from popwin.el
 
 (autoload 'popwin:popup-buffer "popwin" "\
@@ -18,7 +18,7 @@ non-nil, the popup window will show the last contents. Calling
 that case, the buffer of the popup window will be replaced with
 BUFFER.
 
-\(fn BUFFER &key (WIDTH popwin:popup-window-width) (HEIGHT popwin:popup-window-height) (POSITION popwin:popup-window-position) NOSELECT DEDICATED STICK TAIL)" t nil)
+\(fn BUFFER &key (width popwin:popup-window-width) (height popwin:popup-window-height) (position popwin:popup-window-position) NOSELECT DEDICATED STICK TAIL)" t nil)
 
 (autoload 'popwin:display-buffer "popwin" "\
 Display BUFFER-OR-NAME, if possible, in a popup window, or as
@@ -71,7 +71,7 @@ Display *Messages* buffer in a popup window.
 
 ;;;***
 
-;;;### (autoloads nil nil ("popwin-pkg.el") (20734 41255 447304))
+;;;### (autoloads nil nil ("popwin-pkg.el") (20829 41597 364873))
 
 ;;;***
 
