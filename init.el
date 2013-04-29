@@ -159,7 +159,7 @@
 (setq grep-use-null-device nil)
 
 ; grep-find
-(global-set-key "\C-x\C-g" 'grep-find)
+(global-set-key (kbd "C-x C-g") 'grep-find)
 (setq grep-find-command "gren ")
 
 ;元のキーバインドはない
