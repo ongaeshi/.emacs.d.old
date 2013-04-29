@@ -601,63 +601,9 @@
 ;; (push '(dired-mode :position top) popwin:special-display-config) ; dired-jump-other-window (C-x 4 C-j)
 
 ;;--------------------------------------------------------------------------
-;; JavaScript
-;;
-;; js2-20090723b.el (ダウンロード後、 js2.el に改名、要バイトコンパイル)
-;; http://code.google.com/p/js2-mode/downloads/detail?name=js2-20090723b.el&can=2&q=
-;;
-;; espresso.el
-;; http://download-mirror.savannah.gnu.org/releases/espresso/espresso.el
-;;-------------------------------------------------------------------------
-(autoload 'js2-mode "js2" nil t)
-(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-
-; fixing indentation
-; refer to http://mihai.bazon.net/projects/editing-javascript-with-emacs-js2-mode
-(autoload 'espresso-mode "espresso")
-
-(defun my-js2-indent-function ()
-  (interactive)
-  (save-restriction
-    (widen)
-    (let* ((inhibit-point-motion-hooks t)
-           (parse-status (save-excursion (syntax-ppss (point-at-bol))))
-           (offset (- (current-column) (current-indentation)))
-           (indentation (espresso--proper-indentation parse-status))
-           node)
-
-      (save-excursion
-
-        ;; I like to indent case and labels to half of the tab width
-        (back-to-indentation)
-        (if (looking-at "case\\s-")
-            (setq indentation (+ indentation (/ espresso-indent-level 2))))
-
-        ;; consecutive declarations in a var statement are nice if
-        ;; properly aligned, i.e:
-        ;;
-        ;; var foo = "bar",
-        ;; bar = "foo";
-        (setq node (js2-node-at-point))
-        (when (and node
-                   (= js2-NAME (js2-node-type node))
-                   (= js2-VAR (js2-node-type (js2-node-parent node))))
-          (setq indentation (+ 4 indentation))))
-
-      (indent-line-to indentation)
-      (when (> offset 0) (forward-char offset)))))
-
-(defun my-js2-mode-hook ()
-  (require 'espresso)
-  (setq espresso-indent-level 2
-        indent-tabs-mode nil
-        c-basic-offset 2)
-  (c-toggle-auto-state 0)
-  (c-toggle-hungry-state 1)
-  (set (make-local-variable 'indent-line-function) 'my-js2-indent-function)
-  (message "My JS2 hook"))
-
-(add-hook 'js2-mode-hook 'my-js2-mode-hook)
+;; js3-mode
+;;--------------------------------------------------------------------------
+(add-to-list 'auto-mode-alist '("\\.js$" . js3-mode))
 
 ;;--------------------------------------------------------------------------
 ;; 直前に実行したシェルコマンドを実行
