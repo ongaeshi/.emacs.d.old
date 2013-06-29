@@ -167,8 +167,8 @@
 
 ;置換
 (global-set-key "\C-q" 'query-replace)
-;; (global-set-key "\M-q" 'query-replace-regexp)
-(global-set-key "\M-q" 'replace-string)
+(global-set-key "\M-q" 'query-replace-regexp)
+;; (global-set-key "\M-q" 'replace-string)
 
 ;最後のキーボードマクロを呼び出す
 (global-set-key "\C-t" 'call-last-kbd-macro)
@@ -214,14 +214,14 @@
 ;;--------------------------------------------------------------------------
 ;; ウィンドウサイズ
 ;;-------------------------------------------------------------------------
-(setq default-frame-alist
-      (append (list
-	       '(top . 0)
-	       '(left . 0)
-	       '(width . 115)
-	       '(height . 57)
-	       )
-               default-frame-alist))
+;; (setq default-frame-alist
+;;       (append (list
+;; 	       '(top . 0)
+;; 	       '(left . 0)
+;; 	       '(width . 115)
+;; 	       '(height . 57)
+;; 	       )
+;;                default-frame-alist))
 
 ;;--------------------------------------------------------------------------
 ;; Font & Color
@@ -235,20 +235,19 @@
 ;; C, C++
 ;;-------------------------------------------------------------------------
 ;; ヒント
-(defface hint-face '((t (:foreground "#c0c0c0"))) nil)
+;; (defface hint-face '((t (:foreground "#c0c0c0"))) nil)
 
 ;; ヒントの表示(コピペ用:???)
- (defun display-hint ()
-  (font-lock-add-keywords nil '(
-    ("\n" 0 'hint-face prepend)
-    ("\t" 0 'hint-face prepend)
-    ("　" 0 'hint-face prepend)
-  ))
-  (setq buffer-display-table (make-display-table))
-  (aset buffer-display-table ?\n (vconcat "?\n"))
-  (aset buffer-display-table ?\t (vconcat "^\t"))
-  (aset buffer-display-table ?　 (vconcat "□"))
-)
+ ;; (defun display-hint ()
+ ;;  (font-lock-add-keywords nil '(
+ ;;    ("\n" 0 'hint-face prepend)
+ ;;    ("\t" 0 'hint-face prepend)
+ ;;    ("　" 0 'hint-face prepend)
+ ;;  ))
+ ;;  (setq buffer-display-table (make-display-table))
+ ;;  (aset buffer-display-table ?\n (vconcat "?\n"))
+ ;;  (aset buffer-display-table ?\t (vconcat "^\t"))
+ ;;  (aset buffer-display-table ?　 (vconcat "□")))
 
 ;; マジックナンバー
 (defface danger-magic-number-face '((t (:foreground "#e00000"))) nil)
@@ -263,7 +262,7 @@
 ;;; C++モードではマジックナンバーとヒントを表示
 (add-hook 'c++-mode-hook
 	  '(lambda ()
-             (display-hint)
+             ;; (display-hint)
              (font-lock-add-magic-number)
 	     ))
 
@@ -278,6 +277,30 @@
 	     (local-set-key "\C-ci" 'c-insert-if0-region)
 	     ))
 
+;; (add-hook 'c-mode-common-hook
+;;           (lambda ()
+;;             (c-set-style "java")
+;;             (setq c-basic-offset 4)))
+
+(add-hook 'c-mode-common-hook
+          '(lambda ()
+             (c-set-style "java")
+             (setq c-basic-offset 4)
+             (c-set-offset 'substatement-open 0)
+             (c-set-offset 'statement-cont 4)
+             (c-set-offset 'arglist-intro 4)
+             (c-set-offset 'arglist-cont-nonempty 4)
+             (c-set-offset 'innamespace 0)
+             (c-set-offset 'topmost-intro-cont 4)
+             (c-set-offset 'member-init-intro 0)
+             (c-set-offset 'member-init-cont -4)
+             (c-set-offset 'access-label -4)
+             (c-set-offset 'arglist-close 4)
+             (c-set-offset 'case-label 4)
+             (c-set-offset 'statement-case-open 0)
+             (c-set-offset 'inher-cont 0)
+             ))
+
 ;;--------------------------------------------------------------------------
 ;; dired-x
 ;;-------------------------------------------------------------------------
@@ -289,7 +312,7 @@
 (autoload 'ruby-mode "ruby-mode"
   "Mode for editing ruby source files" t)
 (setq auto-mode-alist
-      (append '(("\\.rb$\\|\\.ru$\\|Rakefile$\\|Gemfile$" . ruby-mode)) auto-mode-alist))
+      (append '(("\\.rb$\\|\\.ru$\\|Rakefile$\\|Gemfile" . ruby-mode)) auto-mode-alist))
 (setq interpreter-mode-alist (append '(("ruby" . ruby-mode))
                                      interpreter-mode-alist))
 
@@ -367,6 +390,10 @@
 ;;-------------------------------------------------------------------------
 (require 'anything-startup)
 
+(setq anything-c-filelist-file-name "/tmp/all.filelist")
+;; (setq anything-c-filelist-file-name "/tmp/mnt/all.filelist")
+(setq anything-grep-candidates-fast-directory-regexp "^/tmp")
+
 ; anything-for-filesの内容をカスタマイズ、anything-c-source-locateを除外
 (setq anything-for-files-prefered-list
   '(anything-c-source-ffap-line
@@ -379,7 +406,8 @@
     ;; anything-c-source-locate
     ))
 
-(global-set-key (kbd "C-,") 'anything-for-files)
+;; (global-set-key (kbd "C-,") 'anything-for-files)
+(global-set-key (kbd "C-,") 'anything-filelist+)
 (global-set-key (kbd "C-:") 'anything-resume)
 ;(global-set-key "\M-q" 'anything-regexp)
 ;(global-set-key (kbd "M-y") 'anything-show-kill-ring)
@@ -890,6 +918,19 @@ print (which_library (%%[%s]))'" name name)))
         anything-c-moccur-buffer anything-current-buffer))
      (define-key anything-c-moccur-anything-map (kbd "C-c C-a")
        'all-from-anything-moccur)))
+
+;;--------------------------------------------------------------------------
+;; coffee-mode
+;;--------------------------------------------------------------------------
+(defun coffee-custom ()
+  "coffee-mode-hook"
+ (set (make-local-variable 'tab-width) 2)
+ (setq coffee-tab-width 2))
+
+(add-hook 'coffee-mode-hook
+  '(lambda() (coffee-custom)))
+
+(add-to-list 'ac-modes 'coffee-mode)
 
 ;; +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
