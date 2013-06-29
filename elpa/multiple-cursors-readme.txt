@@ -44,6 +44,7 @@ You can [watch an intro to multiple-cursors at Emacs Rocks](http://emacsrocks.co
  - `mc/mark-previous-word-like-this`: Like `mc/mark-previous-like-this` but only for whole words.
  - `mc/mark-previous-symbol-like-this`: Like `mc/mark-previous-like-this` but only for whole symbols.
  - `mc/mark-more-like-this-extended`: Use arrow keys to quickly mark/skip next/previous occurances.
+ - `mc/add-cursor-on-click`: Bind to a mouse event to add cursors by clicking. See tips-section.
 
 ### Mark many occurrences
 
@@ -61,6 +62,8 @@ You can [watch an intro to multiple-cursors at Emacs Rocks](http://emacsrocks.co
  - `set-rectangular-region-anchor`: Think of this one as `set-mark` except you're marking a rectangular region.
  - `mc/mark-sgml-tag-pair`: Mark the current opening and closing tag.
  - `mc/insert-numbers`: Insert increasing numbers for each cursor, top to bottom.
+ - `mc/sort-regions`: Sort the marked regions alphabetically.
+ - `mc/reverse-regions`: Reverse the order of the marked regions.
 
 ## Tips and tricks
 
@@ -79,14 +82,29 @@ You can [watch an intro to multiple-cursors at Emacs Rocks](http://emacsrocks.co
 - Notice that the number of cursors active can be seen in the modeline.
 
 - If you get out of multiple-cursors-mode and yank - it will yank only
-from the kill-ring of main cursor. To yank from the kill-rings of
-every cursor use yank-rectangle, normally found at C-x r y.
+  from the kill-ring of main cursor. To yank from the kill-rings of
+  every cursor use yank-rectangle, normally found at C-x r y.
+
+- You can use `mc/reverse-regions` with nothing selected and just one cursor.
+  It will then flip the sexp at point and the one below it.
 
 - If you would like to keep the global bindings clean, and get custom keybindings
   when the region is active, you can try [region-bindings-mode](https://github.com/fgallina/region-bindings-mode).
 
 BTW, I highly recommend adding `mc/mark-next-like-this` to a key binding that's
 right next to the key for `er/expand-region`.
+
+### Binding mouse events
+
+To override a mouse event, you will likely have to also unbind the
+`down-mouse` part of the event. Like this:
+
+    (global-unset-key (kbd "M-<down-mouse-1>"))
+    (global-set-key (kbd "M-<mouse-1>") 'mc/add-cursor-on-click)
+
+Or you can do like me and find an unused, but less convenient, binding:
+
+    (global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
 
 ## Unknown commands
 
